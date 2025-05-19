@@ -215,21 +215,21 @@ class MessageRecallEvent(NoticeEvent):
 
 
 class FriendNudgeData(ModelBase):
-    """好友戳一戳数据"""
+    """好友头像双击数据"""
 
     user_id: int
     """好友 QQ 号"""
 
     is_self_send: bool
-    """是否是自己发送的戳一戳"""
+    """是否是自己发送的头像双击"""
 
     is_self_receive: bool
-    """是否是自己接收的戳一戳"""
+    """是否是自己接收的头像双击"""
 
 
 @register_event_class
 class FriendNudgeEvent(NoticeEvent):
-    """好友戳一戳事件"""
+    """好友头像双击事件"""
 
     __event_type__ = "friend_poke"
 
@@ -460,7 +460,7 @@ class GroupWholeMuteEvent(NoticeEvent):
 
 
 class GroupNudgeData(ModelBase):
-    """群戳一戳数据"""
+    """群头像双击数据"""
 
     group_id: int
     """群号"""
@@ -474,7 +474,7 @@ class GroupNudgeData(ModelBase):
 
 @register_event_class
 class GroupNudgeEvent(NoticeEvent):
-    """群戳一戳事件"""
+    """群头像双击事件"""
 
     __event_type__ = "group_poke"
 

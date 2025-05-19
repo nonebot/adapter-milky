@@ -4,7 +4,7 @@ import re
 import base64
 from datetime import datetime
 from typing_extensions import override
-from typing import IO, TYPE_CHECKING, Any, Union, Optional, cast, overload, Sequence
+from typing import IO, TYPE_CHECKING, Any, Union, Optional, cast, overload, Sequence, Literal
 
 from nonebot.message import handle_event
 from nonebot.compat import type_validate_python
@@ -211,6 +211,7 @@ class Bot(BaseBot):
         """发送私聊消息"""
 
         _message = Message(message)
+        _message = await _message.sendable(self)
         result = await self.adapter.call_http(
             self,
             "send_private_message",
@@ -231,6 +232,7 @@ class Bot(BaseBot):
         """发送群消息"""
 
         _message = Message(message)
+        _message = await _message.sendable(self)
         result = await self.adapter.call_http(
             self,
             "send_group_message",
@@ -261,3 +263,115 @@ class Bot(BaseBot):
             }
         )
         return type_validate_python(IncomingMessage, result["message"])
+
+    @API
+    async def get_history_messages(
+        self,
+        *,
+        message_scene: str,
+        peer_id: int,
+        direction: Literal["newer", "older"],
+        start_message_seq: Optional[int] = None,
+        limit: int = 20,
+    ) -> list[IncomingMessage]:
+        """获取历史消息
+
+        Args:
+            message_scene: 消息场景
+            peer_id: 好友 QQ 号或群号
+            direction: 消息获取方向
+            start_message_seq: 起始消息序列号，不提供则从最新消息开始
+            limit: 获取的最大消息数量
+        """
+
+        result = await self.adapter.call_http(
+            self,
+            "get_history_message",
+            {
+                "message_scene": message_scene,
+                "peer_id": peer_id,
+                "direction": direction,
+                "start_message_seq": start_message_seq,
+                "limit": limit,
+            }
+        )
+        return type_validate_python(list[IncomingMessage], result["messages"])
+
+    @API
+    async def get_resource_temp_url(self, resource_id: str) -> str:
+        """获取资源临时链接
+
+        Args:
+            resource_id: 资源 ID
+        """
+        result = await self.adapter.call_http(
+            self,
+            "get_resource_temp_url",
+            {
+                "resource_id": resource_id,
+            }
+        )
+        return result["url"]
+
+    @API
+    async def get_forwarded_messages(self, forward_id: str) -> list[IncomingMessage]:
+        """获取合并转发消息内容
+
+        Args:
+            forward_id: 转发消息 ID
+        """
+        result = await self.adapter.call_http(
+            self,
+            "get_forwarded_messages",
+            {
+                "forward_id": forward_id,
+            }
+        )
+        return type_validate_python(list[IncomingMessage], result["messages"])
+
+    @API
+    async def recall_private_message(
+        self,
+        *,
+        user_id: int,
+        message_seq: int,
+        client_seq: int
+    ) -> None:
+        """撤回私聊消息
+
+        Args:
+            user_id: 好友 QQ 号
+            message_seq: 消息序列号
+            client_seq: 客户端序列号
+        """
+        await self.adapter.call_http(
+            self,
+            "recall_private_message",
+            {
+                "user_id": user_id,
+                "message_seq": message_seq,
+                "client_seq": client_seq
+            }
+        )
+
+    @API
+    async def recall_group_message(
+        self,
+        *,
+        group_id: int,
+        message_seq: int
+    ) -> None:
+        """撤回群消息
+
+        Args:
+            group_id: 群号
+            message_seq: 消息序列号
+        """
+        await self.adapter.call_http(
+            self,
+            "recall_group_message",
+            {
+                "group_id": group_id,
+                "message_seq": message_seq
+            }
+        )

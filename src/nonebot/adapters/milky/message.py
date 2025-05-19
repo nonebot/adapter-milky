@@ -5,10 +5,14 @@ from pathlib import Path
 
 from typing_extensions import override, NotRequired
 from dataclasses import field, dataclass, asdict
-from typing import Union, Literal, ClassVar, Optional, TypedDict, Any
+from typing import Union, Literal, ClassVar, Optional, TypedDict, Any, TYPE_CHECKING
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
+
+
+if TYPE_CHECKING:
+    from .bot import Bot
 
 
 class MessageSegment(BaseMessageSegment["Message"]):
@@ -356,3 +360,25 @@ class Message(BaseMessage[MessageSegment]):
         for seg in self:
             res.append(seg.dump())
         return res
+
+    async def sendable(self, bot: "Bot"):
+        """确保消息段可发送"""
+        new = self.__class__()
+        for seg in self:
+            if isinstance(seg, (Image, Record, Video)) and "resource_id" in seg.data:
+                uri = await bot.get_resource_temp_url(resource_id=seg.data["resource_id"])
+                new.append(seg.parse(seg.data | {"resource_id": uri}))
+            elif isinstance(seg, Forward) and "forward_id" in seg.data:
+                forward_id = seg.data["forward_id"]
+                messages = await bot.get_forwarded_messages(forward_id=forward_id)
+                new.append(
+                    MessageSegment.forward(
+                        # FIXME: get user name
+                        [MessageSegment.node(msg.sender_id, "", msg.message) for msg in messages]
+                    )
+                )
+            elif isinstance(seg, (MarketFace, LightAPP, XML)):
+                continue
+            else:
+                new.append(seg)
+        return new
