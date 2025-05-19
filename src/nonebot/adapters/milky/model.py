@@ -1,4 +1,4 @@
-"""用于 Ariadne 数据模型的工具类."""
+"""Milky 数据模型."""
 
 from datetime import datetime
 from typing import Any, Optional, Literal

@@ -1,10 +1,3 @@
-"""OneBot v11 适配器。
-
-FrontMatter:
-    sidebar_position: 1
-    description: onebot.v11.adapter 模块
-"""
-
 import json
 import asyncio
 from typing_extensions import override

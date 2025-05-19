@@ -43,7 +43,7 @@ class API(Generic[B, P, R]):
         return await self.func(inst, *args, **kwds)
 
 
-log = logger_wrapper("OneBot V11")
+log = logger_wrapper("Milky")
 
 
 def handle_api_result(result: Optional[dict[str, Any]]) -> Any:
