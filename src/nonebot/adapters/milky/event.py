@@ -1,16 +1,12 @@
-from enum import Enum
 from copy import deepcopy
-from datetime import datetime
-from typing_extensions import override, deprecated
-from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Optional
+from typing_extensions import override
+from typing import TYPE_CHECKING, Literal, TypeVar, Optional
 
-from pydantic import Field
 from nonebot.compat import model_validator, type_validate_python
-from nonebot.internal.matcher import current_bot
 from nonebot.internal.adapter import Event as BaseEvent
 
 from .message import Message, Reply, MessageSegment
-from .model import Group, Friend, Member, ModelBase
+from .model import ModelBase
 
 
 class Event(BaseEvent, ModelBase):
@@ -218,6 +214,301 @@ class MessageRecallEvent(NoticeEvent):
         return f"recall:{self.data.message_scene}"
 
 
+class FriendNudgeData(ModelBase):
+    """好友戳一戳数据"""
+
+    user_id: int
+    """好友 QQ 号"""
+
+    is_self_send: bool
+    """是否是自己发送的戳一戳"""
+
+    is_self_receive: bool
+    """是否是自己接收的戳一戳"""
+
+
+@register_event_class
+class FriendNudgeEvent(NoticeEvent):
+    """好友戳一戳事件"""
+
+    __event_type__ = "friend_poke"
+
+    data: FriendNudgeData
+
+
+class FriendFileUploadData(ModelBase):
+    """好友文件上传数据"""
+
+    user_id: int
+    """好友 QQ 号"""
+
+    file_id: str
+    """文件 ID"""
+
+    file_name: str
+    """文件名"""
+
+    file_size: int
+    """文件大小"""
+
+    is_self: bool
+    """是否是自己上传的文件"""
+
+
+@register_event_class
+class FriendFileUploadEvent(NoticeEvent):
+    """好友文件上传事件"""
+
+    __event_type__ = "friend_file_upload"
+
+    data: FriendFileUploadData
+
+
+class GroupAdminChangeData(ModelBase):
+    """群管理员变更数据"""
+
+    group_id: int
+    """群号"""
+
+    user_id: int
+    """发生变更的 QQ 号"""
+
+    is_set: bool
+    """是否被设置为管理员, True 为设置, False 为取消"""
+
+
+@register_event_class
+class GroupAdminChangeEvent(NoticeEvent):
+    """群管理员变更事件"""
+
+    __event_type__ = "group_admin_change"
+
+    data: GroupAdminChangeData
+
+
+class GroupEssenceMessageChangeData(ModelBase):
+    """群精华消息变更数据"""
+
+    group_id: int
+    """群号"""
+
+    message_seq: int
+    """发生变更的消息序列号"""
+
+    is_set: bool
+    """是否被设置为精华, True 为设置, False 为取消"""
+
+
+@register_event_class
+class GroupEssenceMessageChangeEvent(NoticeEvent):
+    """群精华消息变更事件"""
+
+    __event_type__ = "group_essence_message_change"
+
+    data: GroupEssenceMessageChangeData
+
+
+class GroupMemberIncreaseData(ModelBase):
+    """群成员增加数据"""
+
+    group_id: int
+    """群号"""
+
+    user_id: int
+    """增加成员的 QQ 号"""
+
+    operator_id: Optional[int] = None
+    """操作人 QQ号 （管理员 QQ 号，如果是管理员同意入群）"""
+
+    invitor_id: Optional[int] = None
+    """邀请人 QQ号 （邀请人 QQ 号，如果是被邀请入群）"""
+
+
+@register_event_class
+class GroupMemberIncreaseEvent(NoticeEvent):
+    """群成员增加事件"""
+
+    __event_type__ = "group_member_increase"
+
+    data: GroupMemberIncreaseData
+
+
+class GroupMemberDecreaseData(ModelBase):
+    """群成员减少数据"""
+
+    group_id: int
+    """群号"""
+
+    user_id: int
+    """减少成员的 QQ 号"""
+
+    operator_id: Optional[int] = None
+    """操作人 QQ号 （管理员 QQ 号，如果是管理员踢人）"""
+
+
+@register_event_class
+class GroupMemberDecreaseEvent(NoticeEvent):
+    """群成员减少事件"""
+
+    __event_type__ = "group_member_decrease"
+
+    data: GroupMemberDecreaseData
+
+
+class GroupNameChangeData(ModelBase):
+    """群名称变更数据"""
+
+    group_id: int
+    """群号"""
+
+    name: str
+    """新的群名称"""
+
+    operator_id: int
+    """操作人 QQ号"""
+
+
+@register_event_class
+class GroupNameChangeEvent(NoticeEvent):
+    """群名称变更事件"""
+
+    __event_type__ = "group_name_change"
+
+    data: GroupNameChangeData
+
+
+class GroupMessageReactionData(ModelBase):
+    """群消息表情数据"""
+
+    group_id: int
+    """群号"""
+
+    user_id: int
+    """发送者 QQ号"""
+
+    message_seq: int
+    """被回应的消息序列号"""
+
+    face_id: str
+    """表情 ID"""
+
+    is_add: bool
+    """是否添加表情，True 为添加，False 为取消"""
+
+
+@register_event_class
+class GroupMessageReactionEvent(NoticeEvent):
+    """群消息表情回应事件"""
+
+    __event_type__ = "group_message_reaction"
+
+    data: GroupMessageReactionData
+
+
+class GroupMuteData(ModelBase):
+    """群成员禁言数据"""
+
+    group_id: int
+    """群号"""
+
+    user_id: int
+    """被禁言的 QQ 号"""
+
+    duration: int
+    """禁言时长，单位秒; 0 表示取消禁言"""
+
+
+@register_event_class
+class GroupMuteEvent(NoticeEvent):
+    """群成员禁言事件"""
+
+    __event_type__ = "group_mute"
+
+    data: GroupMuteData
+
+    @property
+    def is_cancel(self) -> bool:
+        """是否为取消禁言"""
+        return self.data.duration == 0
+
+
+class GroupWholeMuteData(ModelBase):
+    """群全员禁言数据"""
+
+    group_id: int
+    """群号"""
+
+    operator_id: int
+    """操作人 QQ号"""
+
+    is_mute: bool
+    """是否禁言，True 为禁言，False 为取消禁言"""
+
+
+@register_event_class
+class GroupWholeMuteEvent(NoticeEvent):
+    """群全员禁言事件"""
+
+    __event_type__ = "group_whole_mute"
+
+    data: GroupWholeMuteData
+
+    @property
+    def is_cancel(self) -> bool:
+        """是否为取消禁言"""
+        return not self.data.is_mute
+
+
+class GroupNudgeData(ModelBase):
+    """群戳一戳数据"""
+
+    group_id: int
+    """群号"""
+
+    sender_id: int
+    """发送者 QQ号"""
+
+    receiver_id: int
+    """接收者 QQ号"""
+
+
+@register_event_class
+class GroupNudgeEvent(NoticeEvent):
+    """群戳一戳事件"""
+
+    __event_type__ = "group_poke"
+
+    data: GroupNudgeData
+
+
+class GroupFileUploadData(ModelBase):
+    """群文件上传数据"""
+
+    group_id: int
+    """群号"""
+
+    user_id: int
+    """上传者 QQ号"""
+
+    file_id: str
+    """文件 ID"""
+
+    file_name: str
+    """文件名"""
+
+    file_size: int
+    """文件大小"""
+
+
+@register_event_class
+class GroupFileUploadEvent(NoticeEvent):
+    """群文件上传事件"""
+
+    __event_type__ = "group_file_upload"
+
+    data: GroupFileUploadData
+
+
 class RequestEvent(Event):
 
     @override
@@ -248,3 +539,75 @@ class FriendRequestEvent(RequestEvent):
     __event_type__ = "friend_request"
 
     data: FriendRequestData
+
+
+class GroupJoinRequestData(ModelBase):
+    """入群请求数据"""
+
+    request_id: str
+    """请求 ID"""
+
+    operator_id: int
+    """发起请求的 QQ 号"""
+
+    group_id: int
+    """申请进入的群号"""
+
+    comment: Optional[str] = None
+    """申请附加信息"""
+
+
+@register_event_class
+class GroupJoinRequestEvent(RequestEvent):
+    """入群请求事件"""
+
+    __event_type__ = "group_join_request"
+
+    data: GroupJoinRequestData
+
+
+class GroupInviteRequestData(ModelBase):
+    """邀请他人入群请求数据"""
+
+    request_id: str
+    """请求 ID"""
+
+    operator_id: int
+    """发起请求的 QQ 号"""
+
+    group_id: int
+    """邀请加入的群号"""
+
+    invitee_id: int
+    """被邀请人 QQ 号"""
+
+
+@register_event_class
+class GroupInviteRequestEvent(RequestEvent):
+    """邀请他人入群请求事件"""
+
+    __event_type__ = "group_invite_request"
+
+    data: GroupInviteRequestData
+
+
+class GroupInvitationData(ModelBase):
+    """邀请机器人(自己)入群请求数据"""
+
+    request_id: str
+    """请求 ID"""
+
+    operator_id: int
+    """发起请求的 QQ 号"""
+
+    group_id: int
+    """邀请加入的群号"""
+
+
+@register_event_class
+class GroupInvitationEvent(RequestEvent):
+    """邀请机器人(自己)入群请求事件"""
+
+    __event_type__ = "group_invitation_request"
+
+    data: GroupInvitationData
