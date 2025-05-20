@@ -1,8 +1,9 @@
 import re
 from io import BytesIO
 from pathlib import Path
+from collections.abc import Sequence
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Optional, Sequence, Literal
+from typing import TYPE_CHECKING, Any, Union, Literal, Optional
 
 from nonebot.message import handle_event
 from nonebot.compat import type_validate_python
@@ -12,24 +13,9 @@ from nonebot.adapters import Bot as BaseBot
 from .config import ClientInfo
 from .utils import API, log, to_uri
 from .message import Reply, Message, MessageSegment
-from .model.common import (
-    Group,
-    Friend,
-    Member,
-    Announcement,
-)
-from .model.api import (
-    LoginInfo,
-    FilesInfo,
-    MessagePrivateResponse,
-    MessageGroupResponse
-)
-from .event import (
-    Event,
-    MessageEvent,
-    MessageRecallEvent,
-    IncomingMessage
-)
+from .model.common import Group, Friend, Member, Announcement
+from .event import Event, MessageEvent, IncomingMessage, MessageRecallEvent
+from .model.api import FilesInfo, LoginInfo, MessageGroupResponse, MessagePrivateResponse
 
 if TYPE_CHECKING:
     from .adapter import Adapter
@@ -38,10 +24,10 @@ if TYPE_CHECKING:
 async def _check_reply(bot: "Bot", event: MessageEvent) -> None:
     """检查消息中存在的回复，去除并赋值 `event.reply`, `event.to_me`。
 
-        参数:
-            bot: Bot 对象
-            event: MessageEvent 对象
-        """
+    参数:
+        bot: Bot 对象
+        event: MessageEvent 对象
+    """
     try:
         index = [x.type == "reply" for x in event.message].index(True)
     except ValueError:
@@ -51,7 +37,7 @@ async def _check_reply(bot: "Bot", event: MessageEvent) -> None:
         event.reply = await bot.get_message(
             message_scene=event.data.message_scene,
             peer_id=event.data.peer_id,
-            message_seq=msg_seg.data["message_seq"]
+            message_seq=msg_seg.data["message_seq"],
         )
     except Exception as e:
         log("WARNING", f"Error when getting message reply info: {e!r}")
@@ -110,9 +96,7 @@ def _check_at_me(bot: "Bot", event: MessageEvent) -> None:
             if event.message and _is_at_me_seg(event.message[0]):
                 event.message.pop(0)
                 if event.message and event.message[0].type == "text":
-                    event.message[0].data["text"] = (
-                        event.message[0].data["text"].lstrip()
-                    )
+                    event.message[0].data["text"] = event.message[0].data["text"].lstrip()
                     if not event.message[0].data["text"]:
                         del event.message[0]
 
@@ -120,11 +104,7 @@ def _check_at_me(bot: "Bot", event: MessageEvent) -> None:
             # check the last segment
             i = -1
             last_msg_seg = event.message[i]
-            if (
-                last_msg_seg.type == "text"
-                and not last_msg_seg.data["text"].strip()
-                and len(event.message) >= 2
-            ):
+            if last_msg_seg.type == "text" and not last_msg_seg.data["text"].strip() and len(event.message) >= 2:
                 i -= 1
                 last_msg_seg = event.message[i]
 
@@ -157,7 +137,7 @@ def _check_nickname(bot: "Bot", event: MessageEvent) -> None:
     if m := re.search(rf"^({nickname_regex})([\s,，]*|$)", first_text, re.IGNORECASE):
         log("DEBUG", f"User is calling me {m[1]}")
         event.to_me = True
-        first_msg_seg.data["text"] = first_text[m.end():]
+        first_msg_seg.data["text"] = first_text[m.end() :]
 
 
 class Bot(BaseBot):
@@ -237,7 +217,7 @@ class Bot(BaseBot):
             {
                 "user_id": user_id,
                 "message": _message.to_elements(),
-            }
+            },
         )
         return type_validate_python(MessagePrivateResponse, result)
 
@@ -265,7 +245,7 @@ class Bot(BaseBot):
             {
                 "group_id": group_id,
                 "message": _message.to_elements(),
-            }
+            },
         )
         return type_validate_python(MessageGroupResponse, result)
 

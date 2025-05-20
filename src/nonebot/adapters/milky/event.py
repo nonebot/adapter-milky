@@ -1,12 +1,12 @@
 from copy import deepcopy
 from typing_extensions import override
-from typing import TYPE_CHECKING, Literal, TypeVar, Optional, Union
+from typing import TYPE_CHECKING, Union, Literal, TypeVar, Optional
 
-from nonebot.compat import model_validator, type_validate_python
 from nonebot.internal.adapter import Event as BaseEvent
+from nonebot.compat import model_validator, type_validate_python
 
-from .message import Message, Reply, MessageSegment
-from .model import ModelBase, Group, Member, Friend
+from .message import Reply, Message, MessageSegment
+from .model import Group, Friend, Member, ModelBase
 
 
 class Event(BaseEvent, ModelBase):
@@ -471,7 +471,6 @@ class GroupNameChangeEvent(NoticeEvent):
     __event_type__ = "group_name_change"
 
     data: GroupNameChangeData
-
 
     @override
     def get_user_id(self) -> str:

@@ -1,10 +1,9 @@
-from collections.abc import Iterable
 from io import BytesIO
 from pathlib import Path
-
-from typing_extensions import override, NotRequired
-from dataclasses import field, dataclass, asdict
-from typing import Union, Literal, ClassVar, Optional, TypedDict, Any, TYPE_CHECKING
+from collections.abc import Iterable
+from dataclasses import field, asdict, dataclass
+from typing_extensions import NotRequired, override
+from typing import TYPE_CHECKING, Any, Union, Literal, ClassVar, Optional, TypedDict
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
@@ -210,7 +209,7 @@ class VideoData(TypedDict):
 
 @dataclass
 class Video(MessageSegment):
-    data: VideoData = field(default_factory=dict) # type: ignore
+    data: VideoData = field(default_factory=dict)  # type: ignore
 
     def dump(self):
         return {

@@ -1,29 +1,22 @@
 import json
 import asyncio
-from typing_extensions import override
 from typing import Any, Optional
+from typing_extensions import override
 
 from nonebot.exception import WebSocketClosed
 from nonebot.compat import type_validate_python
-from nonebot.utils import escape_tag, DataclassEncoder
-from nonebot.drivers import (
-    Driver,
-    Request,
-    WebSocket,
-    HTTPClientMixin,
-    WebSocketClientMixin,
-)
+from nonebot.utils import DataclassEncoder, escape_tag
+from nonebot.drivers import Driver, Request, WebSocket, HTTPClientMixin, WebSocketClientMixin
 
 from nonebot import get_plugin_config
 from nonebot.adapters import Adapter as BaseAdapter
 
-
 from .bot import Bot
-from .config import Config, ClientInfo
-from .utils import log, API, clean_params, handle_api_result, raise_api_response
-from .event import Event, EVENT_CLASSES, MessageEvent
 from .model import ModelBase
+from .config import Config, ClientInfo
+from .event import EVENT_CLASSES, Event, MessageEvent
 from .exception import NetworkError, ApiNotAvailable, MilkyAdapterException
+from .utils import API, log, clean_params, handle_api_result, raise_api_response
 
 RECONNECT_INTERVAL = 3.0
 
@@ -48,18 +41,12 @@ class Adapter(BaseAdapter):
             if not isinstance(self.driver, WebSocketClientMixin):
                 log(
                     "WARNING",
-                    (
-                        f"Current driver {self.config.driver} does not support "
-                        "websocket client connections! Ignored"
-                    ),
+                    (f"Current driver {self.config.driver} does not support " "websocket client connections! Ignored"),
                 )
             elif not isinstance(self.driver, HTTPClientMixin):
                 log(
                     "WARNING",
-                    (
-                        f"Current driver {self.config.driver} does not support "
-                        "http client connections! Ignored"
-                    ),
+                    (f"Current driver {self.config.driver} does not support " "http client connections! Ignored"),
                 )
             else:
                 self.on_ready(self._start_forward)
@@ -190,7 +177,6 @@ class Adapter(BaseAdapter):
                 )
                 await asyncio.sleep(RECONNECT_INTERVAL)
 
-
     @classmethod
     def json_to_event(cls, json_data: Any) -> Optional[Event]:
         """将 json 数据转换为 Event 对象。
@@ -213,7 +199,8 @@ class Adapter(BaseAdapter):
             if event_type not in EVENT_CLASSES:
                 log(
                     "WARNING",
-                    f"received unsupported event <r><bg #f8bbd0>{event_type}</bg #f8bbd0></r>: {escape_tag(str(json_data))}",
+                    f"received unsupported event <r><bg #f8bbd0>{event_type}"
+                    f"</bg #f8bbd0></r>: {escape_tag(str(json_data))}",
                 )
                 event = type_validate_python(Event, json_data)
                 event.__event_type__ = event_type  # type: ignore
@@ -225,7 +212,6 @@ class Adapter(BaseAdapter):
         except Exception as e:
             log(
                 "ERROR",
-                "<r><bg #f8bbd0>Failed to parse event. "
-                f"Raw: {escape_tag(str(json_data))}</bg #f8bbd0></r>",
+                "<r><bg #f8bbd0>Failed to parse event. " f"Raw: {escape_tag(str(json_data))}</bg #f8bbd0></r>",
                 e,
             )

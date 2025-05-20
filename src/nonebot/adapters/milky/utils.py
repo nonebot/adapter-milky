@@ -1,17 +1,22 @@
+from io import BytesIO
+from pathlib import Path
 from base64 import b64encode
 from functools import partial
 from collections.abc import Awaitable
-from io import BytesIO
-from pathlib import Path
-
 from typing_extensions import ParamSpec, Concatenate
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, Callable, Optional, overload, Union
+from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar, Callable, Optional, overload
 
 from nonebot.utils import logger_wrapper
 
-from .exception import ActionFailed, NetworkError, InvalidParameter, NoAccessToken, InvalidAccessToken, UnsupportedApi, \
-    UnsupportedContentType
-
+from .exception import (
+    ActionFailed,
+    NetworkError,
+    NoAccessToken,
+    UnsupportedApi,
+    InvalidParameter,
+    InvalidAccessToken,
+    UnsupportedContentType,
+)
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -88,7 +93,12 @@ def clean_params(data: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in data.items() if not k.startswith("_") and k != "self" and v is not None}
 
 
-def to_uri(url: Optional[str] = None, path: Optional[Union[Path, str]] = None, base64: Optional[str] = None, raw: Union[None, bytes, BytesIO] = None):
+def to_uri(
+    url: Optional[str] = None,
+    path: Optional[Union[Path, str]] = None,
+    base64: Optional[str] = None,
+    raw: Union[None, bytes, BytesIO] = None,
+):
     if sum([bool(url), bool(path), bool(base64), bool(raw)]) > 1:
         raise ValueError("Too many binary initializers!")
     if path:

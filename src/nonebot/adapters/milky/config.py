@@ -1,5 +1,6 @@
-from yarl import URL
 from typing import Optional
+
+from yarl import URL
 from pydantic import Field, BaseModel
 
 

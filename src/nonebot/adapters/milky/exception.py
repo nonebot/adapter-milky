@@ -64,8 +64,4 @@ class ActionFailed(BaseActionFailed, MilkyAdapterException):
         """所有错误信息"""
 
     def __repr__(self):
-        return (
-            "ActionFailed("
-            + ", ".join(f"{k}={v!r}" for k, v in self.info.items())
-            + ")"
-        )
+        return "ActionFailed(" + ", ".join(f"{k}={v!r}" for k, v in self.info.items()) + ")"
