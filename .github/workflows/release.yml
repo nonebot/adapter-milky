@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release Version'
+        required: true
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python environment
+        uses: ./.github/actions/setup-python
+
+      - name: Get Version
+        id: version
+        if: github.event_name == 'push'
+        run: |
+          echo "VERSION=$(pdm show --version)" >> $GITHUB_OUTPUT
+          echo "TAG_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Check Version
+        if: github.event_name == 'push' && steps.version.outputs.VERSION != steps.version.outputs.TAG_VERSION
+        run: exit 1
+
+      - name: Publish Package (push)
+        if: github.event_name == 'push'
+        run: |
+          pdm publish
+          gh release upload --clobber ${{ steps.version.outputs.TAG_NAME }} dist/*.tar.gz dist/*.whl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Package (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          pdm publish
+          gh release upload --clobber ${{ inputs.version }} dist/*.tar.gz dist/*.whl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

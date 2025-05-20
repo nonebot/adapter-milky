@@ -43,7 +43,7 @@ DRIVER=~aiohttp
 配置连接配置，如：
 
 ```dotenv
-SATORI_CLIENTS='
+MILKY_CLIENTS='
 [
   {
     "host": "localhost",

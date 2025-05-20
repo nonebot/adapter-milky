@@ -20,6 +20,9 @@ build-backend = "pdm.backend"
 [tool.pdm]
 distribution = true
 
+[tool.pdm.build]
+includes = ["src/nonebot"]
+
 [tool.pdm.dev-dependencies]
 dev = [
     "isort==5.13.2",
