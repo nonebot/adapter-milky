@@ -20,7 +20,7 @@ from nonebot.adapters import Adapter as BaseAdapter
 
 from .bot import Bot
 from .config import Config, ClientInfo
-from .utils import log, API, exclude_none, handle_api_result, raise_api_response
+from .utils import log, API, clean_params, handle_api_result, raise_api_response
 from .event import Event, EVENT_CLASSES, MessageEvent
 from .model import ModelBase
 from .exception import NetworkError, ApiNotAvailable, MilkyAdapterException
@@ -104,7 +104,7 @@ class Adapter(BaseAdapter):
         action: str,
         params: Optional[dict] = None,
     ) -> dict:
-        data = exclude_none(params or {})
+        data = clean_params(params or {})
         data = {k: v.dict_() if isinstance(v, ModelBase) else v for k, v in data.items()}
         header = {"Content-Type": "application/json"}
         if bot.info.access_token:

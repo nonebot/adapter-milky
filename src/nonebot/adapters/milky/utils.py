@@ -1,7 +1,11 @@
+from base64 import b64encode
 from functools import partial
-from collections.abc import Awaitable, Generator
+from collections.abc import Awaitable
+from io import BytesIO
+from pathlib import Path
+
 from typing_extensions import ParamSpec, Concatenate
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, Callable, Optional, overload
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, Callable, Optional, overload, Union
 
 from nonebot.utils import logger_wrapper
 
@@ -80,5 +84,23 @@ def raise_api_response(status: int, message: Optional[str] = None) -> None:
     raise NetworkError(message)
 
 
-def exclude_none(data: dict[str, Any]) -> dict[str, Any]:
-    return {k: v for k, v in data.items() if v is not None}
+def clean_params(data: dict[str, Any]) -> dict[str, Any]:
+    return {k: v for k, v in data.items() if not k.startswith("_") and k != "self" and v is not None}
+
+
+def to_uri(url: Optional[str] = None, path: Optional[Union[Path, str]] = None, base64: Optional[str] = None, raw: Union[None, bytes, BytesIO] = None):
+    if sum([bool(url), bool(path), bool(base64), bool(raw)]) > 1:
+        raise ValueError("Too many binary initializers!")
+    if path:
+        return Path(path).as_uri()
+    if url:
+        return url
+    if base64:
+        return f"base64://{base64}"
+    if raw:
+        if isinstance(raw, BytesIO):
+            _base64 = b64encode(raw.read()).decode()
+        else:
+            _base64 = b64encode(raw).decode()
+        return f"base64://{_base64}"
+    raise ValueError("No binary initializers!")

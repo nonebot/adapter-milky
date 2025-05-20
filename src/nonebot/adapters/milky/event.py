@@ -1,12 +1,12 @@
 from copy import deepcopy
 from typing_extensions import override
-from typing import TYPE_CHECKING, Literal, TypeVar, Optional
+from typing import TYPE_CHECKING, Literal, TypeVar, Optional, Union
 
 from nonebot.compat import model_validator, type_validate_python
 from nonebot.internal.adapter import Event as BaseEvent
 
 from .message import Message, Reply, MessageSegment
-from .model import ModelBase
+from .model import ModelBase, Group, Member, Friend
 
 
 class Event(BaseEvent, ModelBase):
@@ -20,6 +20,9 @@ class Event(BaseEvent, ModelBase):
 
     self_id: int
     """机器人 QQ 号"""
+
+    data: dict
+    """事件数据"""
 
     def get_type(self) -> str:
         return ""
@@ -41,6 +44,10 @@ class Event(BaseEvent, ModelBase):
 
     def is_tome(self) -> bool:
         return False
+
+    @property
+    def is_private(self) -> bool:
+        return True
 
     @property
     def event_type(self) -> str:
@@ -74,11 +81,17 @@ class IncomingMessage(ModelBase):
     time: int
     """消息发送时间"""
 
+    segments: list[dict]
+    """消息段列表"""
+
     client_seq: Optional[int] = None
     """私聊消息的客户端序列号"""
 
-    segments: list[dict]
-    """消息段列表"""
+    friend: Optional[Friend] = None
+
+    group: Optional[Group] = None
+
+    group_member: Optional[Member] = None
 
     @property
     def message(self) -> Message:
@@ -88,6 +101,10 @@ class IncomingMessage(ModelBase):
     def get_reply(self) -> Reply:
         """根据消息 ID 构造回复对象"""
         return MessageSegment.reply(self.message_seq, self.client_seq)
+
+    @property
+    def sender(self) -> Union[Friend, Member]:
+        return self.friend or self.group_member  # type: ignore
 
 
 @register_event_class
@@ -166,6 +183,11 @@ class MessageEvent(Event):
         """根据消息 ID 构造回复对象"""
         return MessageSegment.reply(self.data.message_seq, self.data.client_seq)
 
+    @property
+    def is_private(self) -> bool:
+        """是否为私聊消息"""
+        return self.data.message_scene == "friend"
+
 
 class TempMessageEvent(MessageEvent):
     """临时消息事件"""
@@ -194,6 +216,9 @@ class MessageRecallData(ModelBase):
     peer_id: int
     """好友 QQ号或群号"""
 
+    sender_id: int
+    """发送者 QQ号"""
+
     message_seq: int
     """消息序列号"""
 
@@ -213,6 +238,21 @@ class MessageRecallEvent(NoticeEvent):
     def get_event_name(self) -> str:
         return f"recall:{self.data.message_scene}"
 
+    @property
+    def is_private(self) -> bool:
+        """是否为私聊消息"""
+        return self.data.message_scene == "friend"
+
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.sender_id)
+
+    @override
+    def get_session_id(self) -> str:
+        if self.data.message_scene == "group":
+            return f"{self.data.peer_id}_{self.data.sender_id}"
+        return str(self.data.peer_id)
+
 
 class FriendNudgeData(ModelBase):
     """好友头像双击数据"""
@@ -231,9 +271,25 @@ class FriendNudgeData(ModelBase):
 class FriendNudgeEvent(NoticeEvent):
     """好友头像双击事件"""
 
-    __event_type__ = "friend_poke"
+    __event_type__ = "friend_nudge"
 
     data: FriendNudgeData
+
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.user_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return str(self.data.user_id)
+
+    @override
+    def is_tome(self) -> bool:
+        return self.data.is_self_receive
+
+    @property
+    def is_private(self) -> bool:
+        return True
 
 
 class FriendFileUploadData(ModelBase):
@@ -263,6 +319,22 @@ class FriendFileUploadEvent(NoticeEvent):
 
     data: FriendFileUploadData
 
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.user_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return str(self.data.user_id)
+
+    @override
+    def is_tome(self) -> bool:
+        return True
+
+    @property
+    def is_private(self) -> bool:
+        return True
+
 
 class GroupAdminChangeData(ModelBase):
     """群管理员变更数据"""
@@ -284,6 +356,14 @@ class GroupAdminChangeEvent(NoticeEvent):
     __event_type__ = "group_admin_change"
 
     data: GroupAdminChangeData
+
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.user_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.user_id}"
 
 
 class GroupEssenceMessageChangeData(ModelBase):
@@ -332,6 +412,14 @@ class GroupMemberIncreaseEvent(NoticeEvent):
 
     data: GroupMemberIncreaseData
 
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.user_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.user_id}"
+
 
 class GroupMemberDecreaseData(ModelBase):
     """群成员减少数据"""
@@ -354,6 +442,14 @@ class GroupMemberDecreaseEvent(NoticeEvent):
 
     data: GroupMemberDecreaseData
 
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.user_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.user_id}"
+
 
 class GroupNameChangeData(ModelBase):
     """群名称变更数据"""
@@ -375,6 +471,15 @@ class GroupNameChangeEvent(NoticeEvent):
     __event_type__ = "group_name_change"
 
     data: GroupNameChangeData
+
+
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.operator_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.operator_id}"
 
 
 class GroupMessageReactionData(ModelBase):
@@ -404,6 +509,14 @@ class GroupMessageReactionEvent(NoticeEvent):
 
     data: GroupMessageReactionData
 
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.user_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.user_id}"
+
 
 class GroupMuteData(ModelBase):
     """群成员禁言数据"""
@@ -430,6 +543,14 @@ class GroupMuteEvent(NoticeEvent):
     def is_cancel(self) -> bool:
         """是否为取消禁言"""
         return self.data.duration == 0
+
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.user_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.user_id}"
 
 
 class GroupWholeMuteData(ModelBase):
@@ -458,6 +579,14 @@ class GroupWholeMuteEvent(NoticeEvent):
         """是否为取消禁言"""
         return not self.data.is_mute
 
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.operator_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.operator_id}"
+
 
 class GroupNudgeData(ModelBase):
     """群头像双击数据"""
@@ -476,9 +605,17 @@ class GroupNudgeData(ModelBase):
 class GroupNudgeEvent(NoticeEvent):
     """群头像双击事件"""
 
-    __event_type__ = "group_poke"
+    __event_type__ = "group_nudge"
 
     data: GroupNudgeData
+
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.sender_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.sender_id}"
 
 
 class GroupFileUploadData(ModelBase):
@@ -507,6 +644,14 @@ class GroupFileUploadEvent(NoticeEvent):
     __event_type__ = "group_file_upload"
 
     data: GroupFileUploadData
+
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.user_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.user_id}"
 
 
 class RequestEvent(Event):
@@ -540,6 +685,22 @@ class FriendRequestEvent(RequestEvent):
 
     data: FriendRequestData
 
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.operator_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return str(self.data.operator_id)
+
+    @override
+    def is_tome(self) -> bool:
+        return True
+
+    @property
+    def is_private(self) -> bool:
+        return True
+
 
 class GroupJoinRequestData(ModelBase):
     """入群请求数据"""
@@ -564,6 +725,14 @@ class GroupJoinRequestEvent(RequestEvent):
     __event_type__ = "group_join_request"
 
     data: GroupJoinRequestData
+
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.operator_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.operator_id}"
 
 
 class GroupInviteRequestData(ModelBase):
@@ -590,6 +759,14 @@ class GroupInviteRequestEvent(RequestEvent):
 
     data: GroupInviteRequestData
 
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.operator_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.operator_id}"
+
 
 class GroupInvitationData(ModelBase):
     """邀请机器人(自己)入群请求数据"""
@@ -611,3 +788,11 @@ class GroupInvitationEvent(RequestEvent):
     __event_type__ = "group_invitation_request"
 
     data: GroupInvitationData
+
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.operator_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.operator_id}"

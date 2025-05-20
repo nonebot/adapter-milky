@@ -1,4 +1,3 @@
-from base64 import b64encode
 from collections.abc import Iterable
 from io import BytesIO
 from pathlib import Path
@@ -10,6 +9,7 @@ from typing import Union, Literal, ClassVar, Optional, TypedDict, Any, TYPE_CHEC
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
+from .utils import to_uri
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -84,20 +84,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         sub_type: Literal["normal", "sticker"] = "normal",
     ):
         """图片消息段"""
-        if sum([bool(url), bool(path), bool(base64), bool(raw)]) > 1:
-            raise ValueError("Too many binary initializers!")
-        if path:
-            uri = Path(path).as_uri()
-        elif url:
-            uri = url
-        elif base64:
-            uri = f"base64://{base64}"
-        else:
-            if isinstance(raw, BytesIO):
-                _base64 = b64encode(raw.read()).decode()
-            else:
-                _base64 = b64encode(raw).decode()  # type: ignore
-            uri = f"base64://{_base64}"
+        uri = to_uri(url=url, path=path, base64=base64, raw=raw)
         return Image("image", {"resource_id": uri, "summary": summary, "sub_type": sub_type})  # type: ignore
 
     @staticmethod
@@ -109,20 +96,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         raw: Union[None, bytes, BytesIO] = None,
     ):
         """语音消息段"""
-        if sum([bool(url), bool(path), bool(base64), bool(raw)]) > 1:
-            raise ValueError("Too many binary initializers!")
-        if path:
-            uri = Path(path).as_uri()
-        elif url:
-            uri = url
-        elif base64:
-            uri = f"base64://{base64}"
-        else:
-            if isinstance(raw, BytesIO):
-                _base64 = b64encode(raw.read()).decode()
-            else:
-                _base64 = b64encode(raw).decode()  # type: ignore
-            uri = f"base64://{_base64}"
+        uri = to_uri(url=url, path=path, base64=base64, raw=raw)
         return Record("record", {"resource_id": uri})  # type: ignore
 
     @staticmethod
@@ -135,20 +109,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         thumb_url: Optional[str] = None,
     ):
         """视频消息段"""
-        if sum([bool(url), bool(path), bool(base64), bool(raw)]) > 1:
-            raise ValueError("Too many binary initializers!")
-        if path:
-            uri = Path(path).as_uri()
-        elif url:
-            uri = url
-        elif base64:
-            uri = f"base64://{base64}"
-        else:
-            if isinstance(raw, BytesIO):
-                _base64 = b64encode(raw.read()).decode()
-            else:
-                _base64 = b64encode(raw).decode()  # type: ignore
-            uri = f"base64://{_base64}"
+        uri = to_uri(url=url, path=path, base64=base64, raw=raw)
         return Video("video", {"resource_id": uri, "thumb_url": thumb_url})  # type: ignore
 
     @staticmethod
@@ -190,7 +151,7 @@ class FaceData(TypedDict):
 
 @dataclass
 class Face(MessageSegment):
-    data: FaceData = field(default_factory=dict) # type: ignore
+    data: FaceData = field(default_factory=dict)  # type: ignore
 
 
 class ReplyData(TypedDict):
@@ -373,8 +334,7 @@ class Message(BaseMessage[MessageSegment]):
                 messages = await bot.get_forwarded_messages(forward_id=forward_id)
                 new.append(
                     MessageSegment.forward(
-                        # FIXME: get user name
-                        [MessageSegment.node(msg.sender_id, "", msg.message) for msg in messages]
+                        [MessageSegment.node(msg.sender_id, msg.sender.nickname, msg.message) for msg in messages]
                     )
                 )
             elif isinstance(seg, (MarketFace, LightAPP, XML)):
