@@ -84,7 +84,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     ):
         """图片消息段"""
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        return Image("image", {"resource_id": uri, "summary": summary, "sub_type": sub_type})  # type: ignore
+        return Image("image", {"uri": uri, "summary": summary, "sub_type": sub_type})  # type: ignore
 
     @staticmethod
     def record(
@@ -96,7 +96,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     ):
         """语音消息段"""
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        return Record("record", {"resource_id": uri})  # type: ignore
+        return Record("record", {"uri": uri})  # type: ignore
 
     @staticmethod
     def video(
@@ -109,7 +109,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     ):
         """视频消息段"""
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        return Video("video", {"resource_id": uri, "thumb_url": thumb_url})  # type: ignore
+        return Video("video", {"uri": uri, "thumb_url": thumb_url})  # type: ignore
 
     @staticmethod
     def forward(messages: list["OutgoingForwardedMessage"]) -> "Forward":
@@ -178,16 +178,6 @@ class ImageData(TypedDict):
 class Image(MessageSegment):
     data: ImageData = field(default_factory=dict)  # type: ignore
 
-    def dump(self):
-        return {
-            "type": self.type,
-            "data": {
-                "uri": self.data["resource_id"],
-                "summary": self.data.get("summary"),
-                "sub_type": self.data["sub_type"],
-            },
-        }
-
 
 class RecordData(TypedDict):
     resource_id: str
@@ -198,14 +188,6 @@ class RecordData(TypedDict):
 class Record(MessageSegment):
     data: RecordData = field(default_factory=dict)  # type: ignore
 
-    def dump(self):
-        return {
-            "type": self.type,
-            "data": {
-                "uri": self.data["resource_id"],
-            },
-        }
-
 
 class VideoData(TypedDict):
     resource_id: str
@@ -215,15 +197,6 @@ class VideoData(TypedDict):
 @dataclass
 class Video(MessageSegment):
     data: VideoData = field(default_factory=dict)  # type: ignore
-
-    def dump(self):
-        return {
-            "type": self.type,
-            "data": {
-                "uri": self.data["resource_id"],
-                "thumb_url": self.data.get("thumb_url"),
-            },
-        }
 
 
 class IncomingForwardData(TypedDict):
@@ -317,7 +290,7 @@ class Message(BaseMessage[MessageSegment]):
     def from_elements(cls, elements: list[dict]) -> "Message":
         msg = Message()
         for element in elements:
-            msg.append(TYPE_MAPPING[element["type"]].parse(**element))
+            msg.append(TYPE_MAPPING[element["type"]].parse(element["data"]))
         return msg
 
     def to_elements(self) -> list[dict]:
@@ -331,8 +304,9 @@ class Message(BaseMessage[MessageSegment]):
         new = self.__class__()
         for seg in self:
             if isinstance(seg, (Image, Record, Video)) and "resource_id" in seg.data:
-                uri = await bot.get_resource_temp_url(resource_id=seg.data["resource_id"])
-                new.append(seg.parse(seg.data | {"resource_id": uri}))
+                data = seg.dump()["data"]
+                data["uri"] = await bot.get_resource_temp_url(resource_id=data.pop("resource_id"))
+                new.append(seg.parse(data))
             elif isinstance(seg, Forward) and "forward_id" in seg.data:
                 forward_id = seg.data["forward_id"]
                 messages = await bot.get_forwarded_messages(forward_id=forward_id)
