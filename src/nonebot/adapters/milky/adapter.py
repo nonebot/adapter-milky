@@ -41,12 +41,12 @@ class Adapter(BaseAdapter):
             if not isinstance(self.driver, WebSocketClientMixin):
                 log(
                     "WARNING",
-                    (f"Current driver {self.config.driver} does not support " "websocket client connections! Ignored"),
+                    f"Current driver {self.config.driver} does not support websocket client connections! Ignored",
                 )
             elif not isinstance(self.driver, HTTPClientMixin):
                 log(
                     "WARNING",
-                    (f"Current driver {self.config.driver} does not support " "http client connections! Ignored"),
+                    f"Current driver {self.config.driver} does not support http client connections! Ignored",
                 )
             else:
                 self.on_ready(self._start_forward)

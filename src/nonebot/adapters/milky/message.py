@@ -50,14 +50,14 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Text("text", {"text": content})
 
     @staticmethod
-    def at(user_id: int) -> "At":
-        """@用户消息段"""
-        return At("at", {"user_id": user_id})
+    def mention(user_id: int) -> "Mention":
+        """提及 (@) 消息段"""
+        return Mention("mention", {"user_id": user_id})
 
     @staticmethod
-    def at_all() -> "At":
-        """@所有人消息段"""
-        return At("at", {"user_id": 0})
+    def mention_all() -> "MentionAll":
+        """提及全体 (@全体成员) 消息段"""
+        return MentionAll("mention_all", {})
 
     @staticmethod
     def face(face_id: str) -> "Face":
@@ -135,13 +135,18 @@ class Text(MessageSegment):
     data: TextData = field(default_factory=dict)  # type: ignore
 
 
-class AtData(TypedDict):
+class MentionData(TypedDict):
     user_id: int
 
 
 @dataclass
-class At(MessageSegment):
-    data: AtData = field(default_factory=dict)  # type: ignore
+class Mention(MessageSegment):
+    data: MentionData = field(default_factory=dict)  # type: ignore
+
+
+@dataclass
+class MentionAll(MessageSegment, element_type="mention_all"):
+    pass
 
 
 class FaceData(TypedDict):

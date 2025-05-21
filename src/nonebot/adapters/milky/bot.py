@@ -50,7 +50,7 @@ async def _check_reply(bot: "Bot", event: MessageEvent) -> None:
 
     if (
         len(event.message) > index
-        and event.message[index].type == "at"
+        and event.message[index].type == "mention"
         and str(event.message[index].data["user_id"]) == str(event.reply.sender_id)
     ):
         del event.message[index]
@@ -83,7 +83,7 @@ def _check_at_me(bot: "Bot", event: MessageEvent) -> None:
     else:
 
         def _is_at_me_seg(segment: MessageSegment):
-            return segment.type == "at" and str(segment.data["user_id"]) == str(event.self_id)
+            return segment.type == "mention" and str(segment.data["user_id"]) == str(event.self_id)
 
         # check the first segment
         if _is_at_me_seg(event.message[0]):
