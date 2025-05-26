@@ -303,9 +303,9 @@ class Message(BaseMessage[MessageSegment]):
         """确保消息段可发送"""
         new = self.__class__()
         for seg in self:
-            if isinstance(seg, (Image, Record, Video)) and "resource_id" in seg.data:
+            if isinstance(seg, (Image, Record, Video)) and "resource_id" in seg.data and "uri" not in seg.data:
                 data = seg.dump()["data"]
-                data["uri"] = await bot.get_resource_temp_url(resource_id=data.pop("resource_id"))
+                data["uri"] = await bot.get_resource_temp_url(resource_id=data["resource_id"])
                 new.append(seg.parse(data))
             elif isinstance(seg, Forward) and "forward_id" in seg.data:
                 forward_id = seg.data["forward_id"]
