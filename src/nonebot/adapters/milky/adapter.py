@@ -1,12 +1,22 @@
 import json
 import asyncio
-from typing import Any, Optional
+from typing import Any, Optional, cast
 from typing_extensions import override
 
+from nonebot.internal.driver import Response
 from nonebot.exception import WebSocketClosed
 from nonebot.compat import type_validate_python
 from nonebot.utils import DataclassEncoder, escape_tag
-from nonebot.drivers import Driver, Request, WebSocket, HTTPClientMixin, WebSocketClientMixin
+from nonebot.drivers import (
+    URL,
+    Driver,
+    Request,
+    ASGIMixin,
+    WebSocket,
+    HTTPClientMixin,
+    HTTPServerSetup,
+    WebSocketClientMixin,
+)
 
 from nonebot import get_plugin_config
 from nonebot.adapters import Adapter as BaseAdapter
@@ -50,8 +60,40 @@ class Adapter(BaseAdapter):
                 )
             else:
                 self.on_ready(self._start_forward)
+        if self.milky_config.milky_webhook:
+            if not isinstance(self.driver, ASGIMixin):
+                log(
+                    "WARNING",
+                    f"Current driver {self.config.driver} does not support http server! Ignored",
+                )
+            else:
+                http_setup = HTTPServerSetup(
+                    URL("/milky/"),
+                    "POST",
+                    f"{self.get_name()} Root HTTP",
+                    self._handle_http,
+                )
+                self.setup_http_server(http_setup)
 
         self.driver.on_shutdown(self._stop)
+
+    async def _handle_http(self, request: Request) -> Response:
+        assert self.milky_config.milky_webhook, "Milky webhook config is not set"
+        if data := request.content:
+            json_data = json.loads(data)
+            if event := self.json_to_event(json_data):
+                self_id = str(event.self_id)
+                if not (bot := self.bots.get(self_id, None)):
+                    bot = Bot(self, self_id, self.milky_config.milky_webhook)
+                    self.bot_connect(bot)
+                    log("INFO", f"<y>Bot {escape_tag(self_id)}</y> connected")
+                bot = cast(Bot, bot)
+                task = asyncio.create_task(bot.handle_event(event))
+                task.add_done_callback(self.tasks.discard)
+                self.tasks.add(task)
+        else:
+            return Response(400, content="Invalid request body")
+        return Response(204)
 
     async def _start_forward(self) -> None:
         for info in self.milky_config.milky_clients:
@@ -62,8 +104,7 @@ class Adapter(BaseAdapter):
             except Exception as e:
                 log(
                     "ERROR",
-                    f"<r><bg #f8bbd0>Bad url {escape_tag(str(info.ws_url()))} "
-                    "in onebot forward websocket config</bg #f8bbd0></r>",
+                    f"<r><bg #f8bbd0>Bad url {info.ws_url()!s} " "in milky forward websocket config</bg #f8bbd0></r>",
                     e,
                 )
 
@@ -116,7 +157,8 @@ class Adapter(BaseAdapter):
 
     async def ws_connect(self, client: ClientInfo) -> None:
         headers = {}
-        request = Request("GET", client.ws_url(), headers=headers, timeout=30.0)
+        ws_url = client.ws_url()
+        request = Request("GET", ws_url, headers=headers, timeout=30.0)
 
         bot: Optional[Bot] = None
 
@@ -125,7 +167,7 @@ class Adapter(BaseAdapter):
                 async with self.websocket(request) as ws:
                     log(
                         "DEBUG",
-                        f"WebSocket Connection to {escape_tag(str(client.ws_url()))} established",
+                        f"WebSocket Connection to {ws_url!s} established",
                     )
                     try:
                         while True:
@@ -157,7 +199,7 @@ class Adapter(BaseAdapter):
                             (
                                 "<r><bg #f8bbd0>"
                                 "Error while process data from websocket"
-                                f"{escape_tag(str(client.ws_url()))}. Trying to reconnect..."
+                                f"{ws_url!s}. Trying to reconnect..."
                                 "</bg #f8bbd0></r>"
                             ),
                             e,
@@ -172,7 +214,7 @@ class Adapter(BaseAdapter):
                 log(
                     "ERROR",
                     "<r><bg #f8bbd0>Error while setup websocket to "
-                    f"{escape_tag(str(client.ws_url()))}. Trying to reconnect...</bg #f8bbd0></r>",
+                    f"{ws_url!s}. Trying to reconnect...</bg #f8bbd0></r>",
                     e,
                 )
                 await asyncio.sleep(RECONNECT_INTERVAL)

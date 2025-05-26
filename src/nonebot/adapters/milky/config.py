@@ -24,3 +24,5 @@ class ClientInfo(BaseModel):
 class Config(BaseModel):
     milky_clients: list[ClientInfo] = Field(default_factory=list)
     """Milky 客户端配置"""
+    milky_webhook: Optional[ClientInfo] = None
+    """Milky Webhook 配置"""

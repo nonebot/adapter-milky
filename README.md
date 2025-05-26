@@ -38,6 +38,20 @@ DRIVER=~httpx+~websockets
 DRIVER=~aiohttp
 ```
 
+如果你使用的是 Webhook 模式，则可以移除 `WebSocketClient` 支持，并添加 `ASGI` 支持。
+
+如：
+
+```dotenv
+DRIVER=~httpx+~fastapi
+```
+
+或
+
+```dotenv
+DRIVER=~aiohttp+~fastapi
+```
+
 ### MILKY_CLIENTS
 
 配置连接配置，如：
@@ -52,6 +66,23 @@ MILKY_CLIENTS='
   }
 ]
 '
+```
+
+`host` 与 `port` 为 Milky 协议端设置的监听地址与端口，
+
+`access_token` 为可选项，具体情况以 Milky 协议端为准。
+
+### MILKY_WEBHOOK
+
+如果你使用的是 Webhook 模式，则需要配置 `MILKY_WEBHOOK`。
+
+```dotenv
+MILKY_WEBHOOK='
+{
+  "host": "localhost",
+  "port": "8081",
+  "access_token": "xxx"
+}
 ```
 
 `host` 与 `port` 为 Milky 协议端设置的监听地址与端口，
