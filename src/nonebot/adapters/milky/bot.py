@@ -351,7 +351,7 @@ class Bot(BaseBot):
     async def get_friend_info(self, *, user_id: int, no_cache: bool = False) -> Friend:
         """获取好友信息"""
         result = await self.call(self, "get_friend_info", locals())
-        return type_validate_python(Friend, result)
+        return type_validate_python(Friend, result["friend"])
 
     @API
     async def get_group_list(self, *, no_cache: bool = False) -> list[Group]:
@@ -363,7 +363,7 @@ class Bot(BaseBot):
     async def get_group_info(self, *, group_id: int, no_cache: bool = False) -> Group:
         """获取群信息"""
         result = await self.call(self, "get_group_info", locals())
-        return type_validate_python(Group, result)
+        return type_validate_python(Group, result["group"])
 
     @API
     async def get_group_member_list(self, *, group_id: int, no_cache: bool = False) -> list[Member]:
@@ -375,7 +375,7 @@ class Bot(BaseBot):
     async def get_group_member_info(self, *, group_id: int, user_id: int, no_cache: bool = False) -> Member:
         """获取群成员信息"""
         result = await self.call(self, "get_group_member_info", locals())
-        return type_validate_python(Member, result)
+        return type_validate_python(Member, result["member"])
 
     @API
     async def send_friend_nudge(self, *, user_id: int, is_self: bool = False) -> None:
