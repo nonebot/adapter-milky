@@ -25,6 +25,9 @@ class Friend(ModelBase):
     nickname: str
     """好友昵称"""
 
+    sex: Literal["male", "female", "unknown"]
+    """好友性别"""
+
     remark: str
     """好友备注"""
 

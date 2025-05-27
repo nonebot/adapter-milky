@@ -3,7 +3,7 @@ from typing_extensions import override
 from typing import TYPE_CHECKING, Union, Literal, TypeVar, Optional
 
 from nonebot.internal.adapter import Event as BaseEvent
-from nonebot.compat import model_validator, type_validate_python
+from nonebot.compat import model_dump, model_validator, type_validate_python
 
 from .message import Reply, Message, MessageSegment
 from .model import Group, Friend, Member, ModelBase
@@ -141,7 +141,7 @@ class MessageEvent(Event):
             "group": GroupMessageEvent,
             "temp": TempMessageEvent,
         }[self.data.message_scene]
-        return type_validate_python(cls, self)
+        return type_validate_python(cls, model_dump(self))
 
     @property
     def message_id(self) -> int:
