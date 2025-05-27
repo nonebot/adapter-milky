@@ -529,6 +529,9 @@ class GroupMuteData(ModelBase):
     duration: int
     """禁言时长，单位秒; 0 表示取消禁言"""
 
+    operator_id: int
+    """操作人 QQ号"""
+
 
 @register_event_class
 class GroupMuteEvent(NoticeEvent):

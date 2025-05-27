@@ -44,7 +44,7 @@ body:
     attributes:
       label: NoneBot 版本
       description: 填写 NoneBot 版本
-      placeholder: e.g. 2.0.0
+      placeholder: e.g. 2.4.2
     validations:
       required: true
 
@@ -52,8 +52,8 @@ body:
     id: env-adapter
     attributes:
       label: 适配器
-      description: 填写使用的 Satori 适配器版本
-      placeholder: e.g. 0.10.0
+      description: 填写使用的 Milky 适配器版本
+      placeholder: e.g. 0.1.0
     validations:
       required: true
 

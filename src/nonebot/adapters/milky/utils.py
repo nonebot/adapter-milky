@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from .bot import Bot
 
 T = TypeVar("T")
+TCallable = TypeVar("TCallable", bound=Callable[..., Any])
 B = TypeVar("B", bound="Bot")
 R = TypeVar("R")
 P = ParamSpec("P")
@@ -50,6 +51,18 @@ class API(Generic[B, P, R]):
 
     async def __call__(self, inst: B, *args: P.args, **kwds: P.kwargs) -> R:
         return await self.func(inst, *args, **kwds)
+
+
+def api(func: TCallable) -> TCallable:
+    """装饰器，用于标记 API 方法。
+
+    参数:
+        func: 被装饰的函数
+
+    返回:
+        API 实例
+    """
+    return API(func)  # type: ignore
 
 
 log = logger_wrapper("Milky")
