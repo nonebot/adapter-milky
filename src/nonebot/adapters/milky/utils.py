@@ -8,15 +8,7 @@ from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar, Callable, Option
 
 from nonebot.utils import logger_wrapper
 
-from .exception import (
-    ActionFailed,
-    NetworkError,
-    NoAccessToken,
-    UnsupportedApi,
-    InvalidParameter,
-    InvalidAccessToken,
-    UnsupportedContentType,
-)
+from .exception import ActionFailed, NetworkError, UnsupportedApi, InvalidAccessToken, UnsupportedContentType
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -89,11 +81,7 @@ def handle_api_result(result: Optional[dict[str, Any]]) -> Any:
 def raise_api_response(status: int, message: Optional[str] = None) -> None:
     if status == 200:
         return
-    if status == 400:
-        raise InvalidParameter(message)
     if status == 401:
-        raise NoAccessToken(message)
-    if status == 403:
         raise InvalidAccessToken(message)
     if status == 404:
         raise UnsupportedApi(message)

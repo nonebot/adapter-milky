@@ -84,7 +84,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     ):
         """图片消息段"""
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        return Image("image", {"uri": uri, "summary": summary, "sub_type": sub_type})  # type: ignore
+        return Image("image", {"uri": uri, "summary": summary, "sub_type": sub_type})
 
     @staticmethod
     def record(
@@ -96,7 +96,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     ):
         """语音消息段"""
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        return Record("record", {"uri": uri})  # type: ignore
+        return Record("record", {"uri": uri})
 
     @staticmethod
     def video(
@@ -109,7 +109,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     ):
         """视频消息段"""
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        return Video("video", {"uri": uri, "thumb_url": thumb_url})  # type: ignore
+        return Video("video", {"uri": uri, "thumb_url": thumb_url})
 
     @staticmethod
     def forward(messages: list["OutgoingForwardedMessage"]) -> "Forward":
@@ -168,35 +168,52 @@ class Reply(MessageSegment):
     data: ReplyData = field(default_factory=dict)  # type: ignore
 
 
-class ImageData(TypedDict):
+class IncomingImageData(TypedDict):
     resource_id: str
+    temp_url: str
     summary: NotRequired[str]
+    sub_type: Literal["normal", "sticker"]
+
+
+class OutgoingImageData(TypedDict):
+    uri: str
+    summary: Optional[str]
     sub_type: Literal["normal", "sticker"]
 
 
 @dataclass
 class Image(MessageSegment):
-    data: ImageData = field(default_factory=dict)  # type: ignore
+    data: Union[IncomingImageData, OutgoingImageData] = field(default_factory=dict)  # type: ignore
 
 
-class RecordData(TypedDict):
+class IncomingRecordData(TypedDict):
     resource_id: str
-    duration: NotRequired[int]
+    temp_url: str
+    duration: int
+
+
+class OutgoingRecordData(TypedDict):
+    uri: str
 
 
 @dataclass
 class Record(MessageSegment):
-    data: RecordData = field(default_factory=dict)  # type: ignore
+    data: Union[IncomingRecordData, OutgoingRecordData] = field(default_factory=dict)  # type: ignore
 
 
-class VideoData(TypedDict):
+class IncomingVideoData(TypedDict):
     resource_id: str
-    thumb_url: NotRequired[str]
+    temp_url: str
+
+
+class OutgoingVideoData(TypedDict):
+    uri: str
+    thumb_url: Optional[str]
 
 
 @dataclass
 class Video(MessageSegment):
-    data: VideoData = field(default_factory=dict)  # type: ignore
+    data: Union[IncomingVideoData, OutgoingVideoData] = field(default_factory=dict)  # type: ignore
 
 
 class IncomingForwardData(TypedDict):
@@ -221,12 +238,24 @@ class Forward(MessageSegment):
     @classmethod
     def parse(cls, data: dict[str, Any]) -> "Forward":
         if "forward_id" not in data:
-            raise ValueError("Missing forward_id in data")
+            return cls(
+                "forward",
+                {
+                    "messages": [
+                        OutgoingForwardedMessage(
+                            user_id=msg["user_id"],
+                            name=msg["name"],
+                            segments=Message.from_elements(msg["segments"]),
+                        )
+                        for msg in data["messages"]
+                    ],
+                },
+            )
         return cls("forward", {"forward_id": data["forward_id"]})
 
     def dump(self):
         if "messages" not in self.data:
-            raise ValueError("Missing messages in data")
+            return {"type": self.type, "data": {"forward_id": self.data["forward_id"]}}
         return {
             "type": self.type,
             "data": {
@@ -299,13 +328,21 @@ class Message(BaseMessage[MessageSegment]):
             res.append(seg.dump())
         return res
 
-    async def sendable(self, bot: "Bot"):
-        """确保消息段可发送"""
+    async def sendable(self, bot: "Bot", refresh_resources: bool = False) -> "Message":
+        """确保消息段可发送
+
+        Args:
+            bot: 机器人实例
+            refresh_resources: 是否刷新资源链接，默认为 False
+        """
         new = self.__class__()
         for seg in self:
             if isinstance(seg, (Image, Record, Video)) and "resource_id" in seg.data and "uri" not in seg.data:
                 data = seg.dump()["data"]
-                data["uri"] = await bot.get_resource_temp_url(resource_id=data["resource_id"])
+                if "temp_url" not in data or refresh_resources:
+                    data["uri"] = await bot.get_resource_temp_url(resource_id=data["resource_id"])
+                else:
+                    data["uri"] = data["temp_url"]
                 new.append(seg.parse(data))
             elif isinstance(seg, Forward) and "forward_id" in seg.data:
                 forward_id = seg.data["forward_id"]

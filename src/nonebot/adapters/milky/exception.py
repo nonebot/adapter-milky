@@ -28,16 +28,8 @@ class NetworkError(BaseNetworkError, MilkyAdapterException):
         return f"NetWorkError(message={self.msg!r})"
 
 
-class InvalidParameter(NetworkError):
-    """参数格式错误。"""
-
-
-class NoAccessToken(NetworkError):
-    """鉴权凭据未提供。"""
-
-
 class InvalidAccessToken(NetworkError):
-    """鉴权凭据不匹配。"""
+    """鉴权凭据未提供或不匹配。"""
 
 
 class UnsupportedApi(NetworkError):
