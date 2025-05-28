@@ -75,6 +75,8 @@ def handle_api_result(result: Optional[dict[str, Any]]) -> Any:
     if isinstance(result, dict):
         if result.get("status") == "failed":
             raise ActionFailed(**result)
+        elif result.get("retcode") != 0:
+            raise ActionFailed(**result)
         return result.get("data")
 
 
