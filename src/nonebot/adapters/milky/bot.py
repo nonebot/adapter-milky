@@ -537,10 +537,13 @@ class Bot(BaseBot):
         await self.call(self, "quit_group", locals())
 
     @api
-    async def send_group_message_reaction(self, *, message_seq: int, reaction: str, is_add: bool = True) -> None:
+    async def send_group_message_reaction(
+        self, *, group_id: int, message_seq: int, reaction: str, is_add: bool = True
+    ) -> None:
         """发送群消息表情
 
         Args:
+            group_id: 群号
             message_seq: 消息序列号
             reaction: 表情名称
             is_add: 是否添加表情，false 为删除表情
