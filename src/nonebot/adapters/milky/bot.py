@@ -149,7 +149,9 @@ class Bot(BaseBot):
 
         # Bot 配置信息
         self.info: ClientInfo = info
-        self.call = self.adapter.call_http
+
+    async def _call(self, action: str, data: Optional[dict] = None) -> dict:
+        return await self.adapter.call_http(self.info, action, data)
 
     def __getattr__(self, item):
         raise AttributeError(f"'Bot' object has no attribute '{item}'")
@@ -211,8 +213,7 @@ class Bot(BaseBot):
         """
         _message = Message(message)
         _message = await _message.sendable(self)
-        result = await self.call(
-            self,
+        result = await self._call(
             "send_private_message",
             {
                 "user_id": user_id,
@@ -239,8 +240,7 @@ class Bot(BaseBot):
 
         _message = Message(message)
         _message = await _message.sendable(self)
-        result = await self.call(
-            self,
+        result = await self._call(
             "send_group_message",
             {
                 "group_id": group_id,
@@ -261,7 +261,7 @@ class Bot(BaseBot):
             消息对象 (IncomingMessage)
         """
 
-        result = await self.call(self, "get_message", locals())
+        result = await self._call("get_message", locals())
         return type_validate_python(IncomingMessage, result["message"])
 
     @api
@@ -286,7 +286,7 @@ class Bot(BaseBot):
             消息列表 (list[IncomingMessage])
         """
 
-        result = await self.call(self, "get_history_messages", locals())
+        result = await self._call("get_history_messages", locals())
         return type_validate_python(list[IncomingMessage], result["messages"])
 
     @api
@@ -299,7 +299,7 @@ class Bot(BaseBot):
             可下载的临时链接
         """
 
-        result = await self.call(self, "get_resource_temp_url", {"resource_id": resource_id})
+        result = await self._call("get_resource_temp_url", {"resource_id": resource_id})
         return result["url"]
 
     @api
@@ -311,7 +311,7 @@ class Bot(BaseBot):
         Returns:
             消息列表 (list[IncomingMessage])
         """
-        result = await self.call(self, "get_forwarded_messages", {"forward_id": forward_id})
+        result = await self._call("get_forwarded_messages", {"forward_id": forward_id})
         return type_validate_python(list[IncomingMessage], result["messages"])
 
     @api
@@ -323,7 +323,7 @@ class Bot(BaseBot):
             message_seq: 消息序列号
             client_seq: 客户端序列号
         """
-        await self.call(self, "recall_private_message", locals())
+        await self._call("recall_private_message", locals())
 
     @api
     async def recall_group_message(self, *, group_id: int, message_seq: int) -> None:
@@ -333,64 +333,64 @@ class Bot(BaseBot):
             group_id: 群号
             message_seq: 消息序列号
         """
-        await self.call(self, "recall_group_message", locals())
+        await self._call("recall_group_message", locals())
 
     @api
     async def get_login_info(self) -> LoginInfo:
         """获取登录信息"""
-        result = await self.call(self, "get_login_info")
+        result = await self._call("get_login_info")
         return type_validate_python(LoginInfo, result)
 
     @api
     async def get_friend_list(self, *, no_cache: bool = False) -> list[Friend]:
         """获取好友列表"""
-        result = await self.call(self, "get_friend_list", {"no_cache": no_cache})
+        result = await self._call("get_friend_list", {"no_cache": no_cache})
         return type_validate_python(list[Friend], result["friends"])
 
     @api
     async def get_friend_info(self, *, user_id: int, no_cache: bool = False) -> Friend:
         """获取好友信息"""
-        result = await self.call(self, "get_friend_info", locals())
+        result = await self._call("get_friend_info", locals())
         return type_validate_python(Friend, result["friend"])
 
     @api
     async def get_group_list(self, *, no_cache: bool = False) -> list[Group]:
         """获取群列表"""
-        result = await self.call(self, "get_group_list", {"no_cache": no_cache})
+        result = await self._call("get_group_list", {"no_cache": no_cache})
         return type_validate_python(list[Group], result["groups"])
 
     @api
     async def get_group_info(self, *, group_id: int, no_cache: bool = False) -> Group:
         """获取群信息"""
-        result = await self.call(self, "get_group_info", locals())
+        result = await self._call("get_group_info", locals())
         return type_validate_python(Group, result["group"])
 
     @api
     async def get_group_member_list(self, *, group_id: int, no_cache: bool = False) -> list[Member]:
         """获取群成员列表"""
-        result = await self.call(self, "get_group_member_list", locals())
+        result = await self._call("get_group_member_list", locals())
         return type_validate_python(list[Member], result["members"])
 
     @api
     async def get_group_member_info(self, *, group_id: int, user_id: int, no_cache: bool = False) -> Member:
         """获取群成员信息"""
-        result = await self.call(self, "get_group_member_info", locals())
+        result = await self._call("get_group_member_info", locals())
         return type_validate_python(Member, result["member"])
 
     @api
     async def send_friend_nudge(self, *, user_id: int, is_self: bool = False) -> None:
         """发送好友头像双击动作"""
-        await self.call(self, "send_friend_nudge", locals())
+        await self._call("send_friend_nudge", locals())
 
     @api
     async def send_profile_like(self, *, user_id: int, count: int = 1) -> None:
         """发送个人名片点赞动作"""
-        await self.call(self, "send_profile_like", locals())
+        await self._call("send_profile_like", locals())
 
     @api
     async def set_group_name(self, *, group_id: int, name: str) -> None:
         """设置群名称"""
-        await self.call(self, "set_group_name", locals())
+        await self._call("set_group_name", locals())
 
     @api
     async def set_group_avatar(
@@ -414,7 +414,7 @@ class Bot(BaseBot):
             raw: 图像文件二进制数据
         """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        await self.call(self, "set_group_avatar", {"group_id": group_id, "image_uri": uri})
+        await self._call("set_group_avatar", {"group_id": group_id, "image_uri": uri})
 
     @api
     async def set_group_member_card(self, *, group_id: int, user_id: int, card: str) -> None:
@@ -425,7 +425,7 @@ class Bot(BaseBot):
             user_id: 被设置的成员 QQ 号
             card: 新群名片
         """
-        await self.call(self, "set_group_member_card", locals())
+        await self._call("set_group_member_card", locals())
 
     @api
     async def set_group_special_title(self, *, group_id: int, user_id: int, special_title: str) -> None:
@@ -436,7 +436,7 @@ class Bot(BaseBot):
             user_id: 被设置的成员 QQ 号
             special_title: 专属头衔
         """
-        await self.call(self, "set_group_special_title", locals())
+        await self._call("set_group_special_title", locals())
 
     @api
     async def set_group_member_admin(self, *, group_id: int, user_id: int, is_set: bool = True) -> None:
@@ -447,7 +447,7 @@ class Bot(BaseBot):
             user_id: 被设置的成员 QQ 号
             is_set: 是否设置为管理员，false 为取消管理员
         """
-        await self.call(self, "set_group_member_admin", locals())
+        await self._call("set_group_member_admin", locals())
 
     @api
     async def set_group_member_mute(self, *, group_id: int, user_id: int, duration: int) -> None:
@@ -458,7 +458,7 @@ class Bot(BaseBot):
             user_id: 被设置的成员 QQ 号
             duration: 禁言时长，单位为秒，0 为取消禁言
         """
-        await self.call(self, "set_group_member_mute", locals())
+        await self._call("set_group_member_mute", locals())
 
     @api
     async def set_group_whole_mute(self, *, group_id: int, is_mute: bool = True) -> None:
@@ -468,7 +468,7 @@ class Bot(BaseBot):
             group_id: 群号
             is_mute: 是否设置为全员禁言，false 为取消全员禁言
         """
-        await self.call(self, "set_group_whole_mute", locals())
+        await self._call("set_group_whole_mute", locals())
 
     @api
     async def kick_group_member(self, *, group_id: int, user_id: int, reject_add_request: bool = True) -> None:
@@ -479,7 +479,7 @@ class Bot(BaseBot):
             user_id: 被踢出的成员 QQ 号
             reject_add_request: 是否拒绝后续的加群请求，默认拒绝
         """
-        await self.call(self, "kick_group_member", locals())
+        await self._call("kick_group_member", locals())
 
     @api
     async def get_group_announcement_list(self, *, group_id: int) -> list[Announcement]:
@@ -488,7 +488,7 @@ class Bot(BaseBot):
         Args:
             group_id: 群号
         """
-        result = await self.call(self, "get_group_announcement_list", {"group_id": group_id})
+        result = await self._call("get_group_announcement_list", {"group_id": group_id})
         return type_validate_python(list[Announcement], result["announcements"])
 
     @api
@@ -515,7 +515,7 @@ class Bot(BaseBot):
             raw: 公告图片文件二进制数据
         """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        await self.call(self, "send_group_announcement", {"group_id": group_id, "content": content, "image_uri": uri})
+        await self._call("send_group_announcement", {"group_id": group_id, "content": content, "image_uri": uri})
 
     @api
     async def delete_group_announcement(self, *, group_id: int, announcement_id: int) -> None:
@@ -525,7 +525,7 @@ class Bot(BaseBot):
             group_id: 群号
             announcement_id: 公告 ID
         """
-        await self.call(self, "delete_group_announcement", locals())
+        await self._call("delete_group_announcement", locals())
 
     @api
     async def quit_group(self, *, group_id: int) -> None:
@@ -534,7 +534,7 @@ class Bot(BaseBot):
         Args:
             group_id: 群号
         """
-        await self.call(self, "quit_group", locals())
+        await self._call("quit_group", locals())
 
     @api
     async def send_group_message_reaction(
@@ -548,7 +548,7 @@ class Bot(BaseBot):
             reaction: 表情名称
             is_add: 是否添加表情，false 为删除表情
         """
-        await self.call(self, "send_group_message_reaction", locals())
+        await self._call("send_group_message_reaction", locals())
 
     @api
     async def send_group_nudge(self, *, group_id: int, user_id: int) -> None:
@@ -558,7 +558,7 @@ class Bot(BaseBot):
             group_id: 群号
             user_id: 被戳的群成员 QQ 号
         """
-        await self.call(self, "send_group_nudge", locals())
+        await self._call("send_group_nudge", locals())
 
     @api
     async def accept_request(self, *, request_id: str) -> None:
@@ -567,7 +567,7 @@ class Bot(BaseBot):
         Args:
             request_id: 请求 ID
         """
-        await self.call(self, "accept_request", {"request_id": request_id})
+        await self._call("accept_request", {"request_id": request_id})
 
     @api
     async def reject_request(self, *, request_id: str, reason: Optional[str] = None) -> None:
@@ -577,7 +577,7 @@ class Bot(BaseBot):
             request_id: 请求 ID
             reason: 拒绝理由
         """
-        await self.call(self, "reject_request", locals())
+        await self._call("reject_request", locals())
 
     @api
     async def upload_private_file(
@@ -603,7 +603,7 @@ class Bot(BaseBot):
             文件 ID
         """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        result = await self.call(self, "upload_private_file", {"file_uri": uri, "user_id": user_id})
+        result = await self._call("upload_private_file", {"file_uri": uri, "user_id": user_id})
         return result["file_id"]
 
     @api
@@ -630,7 +630,7 @@ class Bot(BaseBot):
             文件 ID
         """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        result = await self.call(self, "upload_group_file", {"file_uri": uri, "group_id": group_id})
+        result = await self._call("upload_group_file", {"file_uri": uri, "group_id": group_id})
         return result["file_id"]
 
     @api
@@ -643,7 +643,7 @@ class Bot(BaseBot):
         Returns:
             可下载的链接
         """
-        result = await self.call(self, "get_private_file_download_url", locals())
+        result = await self._call("get_private_file_download_url", locals())
         return result["download_url"]
 
     @api
@@ -656,7 +656,7 @@ class Bot(BaseBot):
         Returns:
             可下载的链接
         """
-        result = await self.call(self, "get_group_file_download_url", locals())
+        result = await self._call("get_group_file_download_url", locals())
         return result["download_url"]
 
     @api
@@ -667,7 +667,7 @@ class Bot(BaseBot):
             group_id: 群号
             parent_folder_id: 父文件夹 ID，默认为根目录
         """
-        result = await self.call(self, "get_group_files", locals())
+        result = await self._call("get_group_files", locals())
         return type_validate_python(FilesInfo, result)
 
     @api
@@ -679,7 +679,7 @@ class Bot(BaseBot):
             file_id: 文件 ID
             target_folder_id: 目标文件夹 ID，默认为根目录
         """
-        await self.call(self, "move_group_file", locals())
+        await self._call("move_group_file", locals())
 
     @api
     async def rename_group_file(self, *, group_id: int, file_id: str, new_name: str) -> None:
@@ -690,7 +690,7 @@ class Bot(BaseBot):
             file_id: 文件 ID
             new_name: 新文件名
         """
-        await self.call(self, "rename_group_file", locals())
+        await self._call("rename_group_file", locals())
 
     @api
     async def delete_group_file(self, *, group_id: int, file_id: str) -> None:
@@ -700,7 +700,7 @@ class Bot(BaseBot):
             group_id: 群号
             file_id: 文件 ID
         """
-        await self.call(self, "delete_group_file", locals())
+        await self._call("delete_group_file", locals())
 
     @api
     async def create_group_folder(self, *, group_id: int, folder_name: str) -> str:
@@ -712,7 +712,7 @@ class Bot(BaseBot):
         Returns:
             新建文件夹的 ID
         """
-        result = await self.call(self, "create_group_folder", locals())
+        result = await self._call("create_group_folder", locals())
         return result["folder_id"]
 
     @api
@@ -724,7 +724,7 @@ class Bot(BaseBot):
             folder_id: 文件夹 ID
             new_name: 新文件夹名
         """
-        await self.call(self, "rename_group_folder", locals())
+        await self._call("rename_group_folder", locals())
 
     @api
     async def delete_group_folder(self, *, group_id: int, folder_id: str) -> None:
@@ -734,4 +734,4 @@ class Bot(BaseBot):
             group_id: 群号
             folder_id: 文件夹 ID
         """
-        await self.call(self, "delete_group_folder", locals())
+        await self._call("delete_group_folder", locals())

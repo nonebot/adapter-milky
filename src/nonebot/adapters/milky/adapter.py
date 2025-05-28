@@ -128,18 +128,18 @@ class Adapter(BaseAdapter):
 
     async def call_http(
         self,
-        bot: Bot,
+        info: ClientInfo,
         action: str,
         params: Optional[dict] = None,
     ) -> dict:
         data = clean_params(params or {})
         data = {k: v.dict_() if isinstance(v, ModelBase) else v for k, v in data.items()}
         header = {"Content-Type": "application/json"}
-        if bot.info.access_token:
-            header["Authorization"] = f"Bearer {bot.info.access_token}"
+        if info.access_token:
+            header["Authorization"] = f"Bearer {info.access_token}"
         req = Request(
             "POST",
-            bot.info.get_url(action),
+            info.get_url(action),
             content=json.dumps(data, cls=DataclassEncoder),
             headers=header,
         )
@@ -169,21 +169,21 @@ class Adapter(BaseAdapter):
                         "DEBUG",
                         f"WebSocket Connection to {ws_url!s} established",
                     )
+                    if not bot:
+                        info = await self.call_http(client, "get_login_info")
+                        bot = Bot(self, str(info["uin"]), client)
+                        self.bot_connect(bot)
+                        self.connections[bot.self_id] = ws
+                        log(
+                            "INFO",
+                            f"<y>Bot {escape_tag(bot.self_id)}</y> connected",
+                        )
                     try:
                         while True:
                             data: dict[str, Any] = json.loads(await ws.receive())
                             event = self.json_to_event(data)
                             if not event:
                                 continue
-                            if not bot:
-                                self_id = event.self_id
-                                bot = Bot(self, str(self_id), client)
-                                self.bot_connect(bot)
-                                self.connections[str(self_id)] = ws
-                                log(
-                                    "INFO",
-                                    f"<y>Bot {escape_tag(str(self_id))}</y> connected",
-                                )
                             task = asyncio.create_task(bot.handle_event(event))
                             task.add_done_callback(self.tasks.discard)
                             self.tasks.add(task)
