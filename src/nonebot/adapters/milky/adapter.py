@@ -133,6 +133,7 @@ class Adapter(BaseAdapter):
         params: Optional[dict] = None,
     ) -> dict:
         data = clean_params(params or {})
+        timeout: float = data.get("_timeout", self.config.api_timeout)
         data = {k: v.dict_() if isinstance(v, ModelBase) else v for k, v in data.items()}
         header = {"Content-Type": "application/json"}
         if info.access_token:
@@ -142,6 +143,7 @@ class Adapter(BaseAdapter):
             info.get_url(action),
             content=json.dumps(data, cls=DataclassEncoder),
             headers=header,
+            timeout=timeout,
         )
 
         try:
