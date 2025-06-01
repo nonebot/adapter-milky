@@ -13,9 +13,10 @@ from nonebot.adapters import Bot as BaseBot
 from .config import ClientInfo
 from .utils import api, log, to_uri
 from .message import Reply, Message, MessageSegment
+from .event import Event, MessageEvent, MessageRecallEvent
 from .model.common import Group, Friend, Member, Announcement
-from .event import Event, MessageEvent, IncomingMessage, MessageRecallEvent
 from .model.api import FilesInfo, LoginInfo, MessageGroupResponse, MessagePrivateResponse
+from .model.event import FriendRequest, IncomingMessage, GroupJoinRequest, InvitationRequest
 
 if TYPE_CHECKING:
     from .adapter import Adapter
@@ -559,6 +560,36 @@ class Bot(BaseBot):
             user_id: 被戳的群成员 QQ 号
         """
         await self._call("send_group_nudge", locals())
+
+    @api
+    async def get_friend_requests(self, *, limit: int = 20) -> list[FriendRequest]:
+        """获取好友请求列表
+
+        Args:
+            limit: 获取的最大请求数量，默认为 20
+        """
+        result = await self._call("get_friend_requests", {"limit": limit})
+        return type_validate_python(list[FriendRequest], result["requests"])
+
+    @api
+    async def get_group_requests(self, *, limit: int = 20) -> list[GroupJoinRequest]:
+        """获取入群请求列表
+
+        Args:
+            limit: 获取的最大请求数量，默认为 20
+        """
+        result = await self._call("get_group_requests", {"limit": limit})
+        return type_validate_python(list[GroupJoinRequest], result["requests"])
+
+    @api
+    async def get_group_invitations(self, *, limit: int = 20) -> list[InvitationRequest]:
+        """获取入群邀请列表
+
+        Args:
+            limit: 获取的最大请求数量，默认为 20
+        """
+        result = await self._call("get_group_invitations", {"limit": limit})
+        return type_validate_python(list[InvitationRequest], result["invitations"])
 
     @api
     async def accept_request(self, *, request_id: str) -> None:

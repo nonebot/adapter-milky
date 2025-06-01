@@ -1,12 +1,13 @@
 from copy import deepcopy
 from typing_extensions import override
-from typing import TYPE_CHECKING, Union, Literal, TypeVar, Optional
+from typing import TYPE_CHECKING, Literal, TypeVar, Optional
 
 from nonebot.internal.adapter import Event as BaseEvent
 from nonebot.compat import model_dump, model_validator, type_validate_python
 
+from .model import ModelBase
 from .message import Reply, Message, MessageSegment
-from .model import Group, Friend, Member, ModelBase
+from .model.event import FriendRequest, IncomingMessage, GroupJoinRequest, InvitationRequest
 
 
 class Event(BaseEvent, ModelBase):
@@ -62,49 +63,6 @@ E = TypeVar("E", bound="Event")
 def register_event_class(event_class: type[E]) -> type[E]:
     EVENT_CLASSES[event_class.__event_type__] = event_class
     return event_class
-
-
-class IncomingMessage(ModelBase):
-    """接收的消息"""
-
-    message_scene: Literal["friend", "group", "temp"]
-
-    peer_id: int
-    """好友 QQ号或群号"""
-
-    message_seq: int
-    """消息序列号"""
-
-    sender_id: int
-    """发送者 QQ号"""
-
-    time: int
-    """消息发送时间"""
-
-    segments: list[dict]
-    """消息段列表"""
-
-    client_seq: Optional[int] = None
-    """私聊消息的客户端序列号"""
-
-    friend: Optional[Friend] = None
-
-    group: Optional[Group] = None
-
-    group_member: Optional[Member] = None
-
-    @property
-    def message(self) -> Message:
-        """消息对象"""
-        return Message.from_elements(self.segments)
-
-    def get_reply(self) -> Reply:
-        """根据消息 ID 构造回复对象"""
-        return MessageSegment.reply(self.message_seq, self.client_seq)
-
-    @property
-    def sender(self) -> Union[Friend, Member]:
-        return self.friend or self.group_member  # type: ignore
 
 
 @register_event_class
@@ -663,37 +621,21 @@ class RequestEvent(Event):
         return "request"
 
 
-class FriendRequestData(ModelBase):
-    """好友请求数据"""
-
-    request_id: str
-    """请求 ID"""
-
-    operator_id: int
-    """发起请求的 QQ 号"""
-
-    comment: Optional[str] = None
-    """好友请求附加信息"""
-
-    via: Optional[str] = None
-    """好友请求来源"""
-
-
 @register_event_class
 class FriendRequestEvent(RequestEvent):
     """好友请求事件"""
 
     __event_type__ = "friend_request"
 
-    data: FriendRequestData
+    data: FriendRequest
 
     @override
     def get_user_id(self) -> str:
-        return str(self.data.operator_id)
+        return str(self.data.initiator_id)
 
     @override
     def get_session_id(self) -> str:
-        return str(self.data.operator_id)
+        return str(self.data.initiator_id)
 
     @override
     def is_tome(self) -> bool:
@@ -704,83 +646,21 @@ class FriendRequestEvent(RequestEvent):
         return True
 
 
-class GroupJoinRequestData(ModelBase):
-    """入群请求数据"""
-
-    request_id: str
-    """请求 ID"""
-
-    operator_id: int
-    """发起请求的 QQ 号"""
-
-    group_id: int
-    """申请进入的群号"""
-
-    comment: Optional[str] = None
-    """申请附加信息"""
-
-
 @register_event_class
-class GroupJoinRequestEvent(RequestEvent):
+class GroupRequestEvent(RequestEvent):
     """入群请求事件"""
 
-    __event_type__ = "group_join_request"
+    __event_type__ = "group_request"
 
-    data: GroupJoinRequestData
-
-    @override
-    def get_user_id(self) -> str:
-        return str(self.data.operator_id)
-
-    @override
-    def get_session_id(self) -> str:
-        return f"{self.data.group_id}_{self.data.operator_id}"
-
-
-class GroupInviteRequestData(ModelBase):
-    """邀请他人入群请求数据"""
-
-    request_id: str
-    """请求 ID"""
-
-    operator_id: int
-    """发起请求的 QQ 号"""
-
-    group_id: int
-    """邀请加入的群号"""
-
-    invitee_id: int
-    """被邀请人 QQ 号"""
-
-
-@register_event_class
-class GroupInviteRequestEvent(RequestEvent):
-    """邀请他人入群请求事件"""
-
-    __event_type__ = "group_invite_request"
-
-    data: GroupInviteRequestData
+    data: GroupJoinRequest
 
     @override
     def get_user_id(self) -> str:
-        return str(self.data.operator_id)
+        return str(self.data.initiator_id)
 
     @override
     def get_session_id(self) -> str:
-        return f"{self.data.group_id}_{self.data.operator_id}"
-
-
-class GroupInvitationData(ModelBase):
-    """邀请机器人(自己)入群请求数据"""
-
-    request_id: str
-    """请求 ID"""
-
-    operator_id: int
-    """发起请求的 QQ 号"""
-
-    group_id: int
-    """邀请加入的群号"""
+        return f"{self.data.group_id}_{self.data.initiator_id}"
 
 
 @register_event_class
@@ -789,12 +669,12 @@ class GroupInvitationEvent(RequestEvent):
 
     __event_type__ = "group_invitation_request"
 
-    data: GroupInvitationData
+    data: InvitationRequest
 
     @override
     def get_user_id(self) -> str:
-        return str(self.data.operator_id)
+        return str(self.data.initiator_id)
 
     @override
     def get_session_id(self) -> str:
-        return f"{self.data.group_id}_{self.data.operator_id}"
+        return f"{self.data.group_id}_{self.data.initiator_id}"
