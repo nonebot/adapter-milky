@@ -678,3 +678,35 @@ class GroupInvitationEvent(RequestEvent):
     @override
     def get_session_id(self) -> str:
         return f"{self.data.group_id}_{self.data.initiator_id}"
+
+
+class MetaEvent(Event):
+    """元事件基类"""
+
+    @override
+    def get_type(self) -> str:
+        return "meta"
+
+
+class BotOfflineData(ModelBase):
+    """机器人下线数据"""
+
+    reason: str
+    """下线原因"""
+
+
+@register_event_class
+class BotOfflineEvent(MetaEvent):
+    """机器人下线事件"""
+
+    __event_type__ = "bot_offline"
+
+    data: BotOfflineData
+
+    @override
+    def get_event_name(self) -> str:
+        return "bot_offline"
+
+    @override
+    def get_event_description(self) -> str:
+        return f"Bot offline: {self.data.reason}"
