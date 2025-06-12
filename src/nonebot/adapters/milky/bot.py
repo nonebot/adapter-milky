@@ -15,7 +15,7 @@ from .utils import api, log, to_uri
 from .message import Reply, Message, MessageSegment
 from .event import Event, MessageEvent, MessageRecallEvent
 from .model.common import Group, Friend, Member, Announcement
-from .model.api import FilesInfo, LoginInfo, MessageGroupResponse, MessagePrivateResponse
+from .model.api import FilesInfo, LoginInfo, MessageGroupResponse, MessagePrivateResponse, ImplInfo
 from .model.event import FriendRequest, IncomingMessage, GroupJoinRequest, InvitationRequest
 
 if TYPE_CHECKING:
@@ -341,6 +341,12 @@ class Bot(BaseBot):
         """获取登录信息"""
         result = await self._call("get_login_info")
         return type_validate_python(LoginInfo, result)
+
+    @api
+    async def get_impl_info(self) -> ImplInfo:
+        """获取协议端信息"""
+        result = await self._call("get_impl_info")
+        return type_validate_python(ImplInfo, result)
 
     @api
     async def get_friend_list(self, *, no_cache: bool = False) -> list[Friend]:
