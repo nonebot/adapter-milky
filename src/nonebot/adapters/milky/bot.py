@@ -15,7 +15,7 @@ from .utils import api, log, to_uri
 from .message import Reply, Message, MessageSegment
 from .event import Event, MessageEvent, MessageRecallEvent
 from .model.common import Group, Friend, Member, Announcement
-from .model.api import FilesInfo, LoginInfo, MessageResponse, ImplInfo
+from .model.api import ImplInfo, FilesInfo, LoginInfo, MessageResponse
 from .model.event import FriendRequest, IncomingMessage, GroupJoinRequest, InvitationRequest
 
 if TYPE_CHECKING:

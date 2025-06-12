@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 from ..message import Reply
 from .base import ModelBase
 from .common import FileInfo, FolderInfo

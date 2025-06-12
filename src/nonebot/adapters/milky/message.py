@@ -158,6 +158,7 @@ class Face(MessageSegment):
 class ReplyData(TypedDict):
     message_seq: int
 
+
 @dataclass
 class Reply(MessageSegment):
     data: ReplyData = field(default_factory=dict)  # type: ignore
