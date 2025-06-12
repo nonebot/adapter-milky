@@ -6,25 +6,8 @@ from .base import ModelBase
 from .common import FileInfo, FolderInfo
 
 
-class MessagePrivateResponse(ModelBase):
-    """私聊消息响应"""
-
-    message_seq: int
-    """消息序列号"""
-
-    time: int
-    """消息发送时间"""
-
-    client_seq: int
-    """	消息的客户端序列号"""
-
-    def get_reply(self) -> Reply:
-        """获取回复消息"""
-        return Reply("reply", {"message_seq": self.message_seq, "client_seq": self.client_seq})
-
-
-class MessageGroupResponse(ModelBase):
-    """群聊消息响应"""
+class MessageResponse(ModelBase):
+    """消息响应"""
 
     message_seq: int
     """消息序列号"""

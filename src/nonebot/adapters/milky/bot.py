@@ -15,7 +15,7 @@ from .utils import api, log, to_uri
 from .message import Reply, Message, MessageSegment
 from .event import Event, MessageEvent, MessageRecallEvent
 from .model.common import Group, Friend, Member, Announcement
-from .model.api import FilesInfo, LoginInfo, MessageGroupResponse, MessagePrivateResponse, ImplInfo
+from .model.api import FilesInfo, LoginInfo, MessageResponse, ImplInfo
 from .model.event import FriendRequest, IncomingMessage, GroupJoinRequest, InvitationRequest
 
 if TYPE_CHECKING:
@@ -210,7 +210,7 @@ class Bot(BaseBot):
             message: 消息内容
 
         Returns:
-            私聊消息结果 (message_seq, time, client_seq)
+            消息结果 (message_seq, time)
         """
         _message = Message(message)
         _message = await _message.sendable(self)
@@ -221,7 +221,7 @@ class Bot(BaseBot):
                 "message": _message.to_elements(),
             },
         )
-        return type_validate_python(MessagePrivateResponse, result)
+        return type_validate_python(MessageResponse, result)
 
     @api
     async def send_group_message(
@@ -236,7 +236,7 @@ class Bot(BaseBot):
             group_id: 群号
             message: 消息内容
         Returns:
-            群消息结果 (message_seq, time)
+            消息结果 (message_seq, time)
         """
 
         _message = Message(message)
@@ -248,7 +248,7 @@ class Bot(BaseBot):
                 "message": _message.to_elements(),
             },
         )
-        return type_validate_python(MessageGroupResponse, result)
+        return type_validate_python(MessageResponse, result)
 
     @api
     async def get_message(self, *, message_scene: str, peer_id: int, message_seq: int) -> IncomingMessage:
@@ -316,13 +316,12 @@ class Bot(BaseBot):
         return type_validate_python(list[IncomingMessage], result["messages"])
 
     @api
-    async def recall_private_message(self, *, user_id: int, message_seq: int, client_seq: int) -> None:
+    async def recall_private_message(self, *, user_id: int, message_seq: int) -> None:
         """撤回私聊消息
 
         Args:
             user_id: 好友 QQ 号
             message_seq: 消息序列号
-            client_seq: 客户端序列号
         """
         await self._call("recall_private_message", locals())
 

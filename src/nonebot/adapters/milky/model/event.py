@@ -25,9 +25,6 @@ class IncomingMessage(ModelBase):
     segments: list[dict]
     """消息段列表"""
 
-    client_seq: Optional[int] = None
-    """私聊消息的客户端序列号"""
-
     friend: Optional[Friend] = None
 
     group: Optional[Group] = None
@@ -41,7 +38,7 @@ class IncomingMessage(ModelBase):
 
     def get_reply(self) -> Reply:
         """根据消息 ID 构造回复对象"""
-        return MessageSegment.reply(self.message_seq, self.client_seq)
+        return MessageSegment.reply(self.message_seq)
 
     @property
     def sender(self) -> Union[Friend, Member]:

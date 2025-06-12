@@ -65,12 +65,9 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Face("face", {"face_id": face_id})
 
     @staticmethod
-    def reply(message_seq: int, client_seq: Optional[int] = None) -> "Reply":
-        """引用消息段
-
-        在回复私聊消息时必须提供 `client_seq` 参数
-        """
-        return Reply("reply", {"message_seq": message_seq, "client_seq": client_seq})  # type: ignore
+    def reply(message_seq: int) -> "Reply":
+        """引用消息段"""
+        return Reply("reply", {"message_seq": message_seq})
 
     @staticmethod
     def image(
@@ -160,8 +157,6 @@ class Face(MessageSegment):
 
 class ReplyData(TypedDict):
     message_seq: int
-    client_seq: NotRequired[int]
-
 
 @dataclass
 class Reply(MessageSegment):

@@ -139,7 +139,7 @@ class MessageEvent(Event):
     @property
     def reply_to(self) -> Reply:
         """根据消息 ID 构造回复对象"""
-        return MessageSegment.reply(self.data.message_seq, self.data.client_seq)
+        return MessageSegment.reply(self.data.message_seq)
 
     @property
     def is_private(self) -> bool:
