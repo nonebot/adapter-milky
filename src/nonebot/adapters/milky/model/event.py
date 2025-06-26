@@ -45,6 +45,27 @@ class IncomingMessage(ModelBase):
         return self.friend or self.group_member  # type: ignore
 
 
+class IncomingForwardedMessage(ModelBase):
+    """接收的转发消息"""
+
+    name: str
+    """发送者名称"""
+
+    avatar_url: str
+    """发送者头像 URL"""
+
+    time: int
+    """消息 Unix 时间戳（秒）"""
+
+    segments: list[dict]
+    """消息段列表"""
+
+    @property
+    def message(self) -> Message:
+        """消息对象"""
+        return Message.from_elements(self.segments)
+
+
 class FriendRequest(ModelBase):
     """好友请求"""
 

@@ -17,16 +17,16 @@ class Friend(ModelBase):
     """好友信息"""
 
     user_id: int
-    """好友 QQ号"""
-
-    qid: Optional[str] = None
-    """好友 QID"""
+    """用户 QQ号"""
 
     nickname: str
-    """好友昵称"""
+    """用户昵称"""
 
     sex: Literal["male", "female", "unknown"]
-    """好友性别"""
+    """用户性别"""
+
+    qid: Optional[str] = None
+    """用户 QID"""
 
     remark: str
     """好友备注"""
@@ -54,23 +54,22 @@ class Group(ModelBase):
 class Member(ModelBase):
     """群成员信息"""
 
-    group_id: int
-    """群号"""
-
     user_id: int
-    """成员 QQ号"""
+    """用户 QQ号"""
 
     nickname: str
-    """成员昵称"""
+    """用户昵称"""
 
+    sex: Literal["male", "female", "unknown"]
+    """用户性别"""
+
+    group_id: int
+    """群号"""
     card: str
     """成员备注"""
 
     title: Optional[str] = None
     """成员头衔"""
-
-    sex: Literal["male", "female", "unknown"]
-    """成员性别"""
 
     level: int
     """成员的群等级"""
@@ -119,7 +118,7 @@ class FileInfo(ModelBase):
     file_name: str
     """文件名"""
 
-    parent_folder_id: Optional[str] = None
+    parent_folder_id: str
     """父文件夹 ID"""
 
     file_size: int
@@ -128,7 +127,7 @@ class FileInfo(ModelBase):
     uploaded_time: int
     """上传时间"""
 
-    expire_time: int
+    expire_time: Optional[int] = None
     """过期时间"""
 
     uploader_id: int
@@ -150,7 +149,7 @@ class FolderInfo(ModelBase):
     folder_name: str
     """文件夹名"""
 
-    parent_folder_id: Optional[str] = None
+    parent_folder_id: str
     """父文件夹 ID"""
 
     created_time: int

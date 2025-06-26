@@ -105,7 +105,7 @@ def to_uri(
     if sum([bool(url), bool(path), bool(base64), bool(raw)]) > 1:
         raise ValueError("Too many binary initializers!")
     if path:
-        return Path(path).as_uri()
+        return Path(path).resolve().as_uri()
     if url:
         return url
     if base64:

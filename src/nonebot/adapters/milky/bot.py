@@ -16,7 +16,7 @@ from .message import Reply, Message, MessageSegment
 from .event import Event, MessageEvent, MessageRecallEvent
 from .model.common import Group, Friend, Member, Announcement
 from .model.api import ImplInfo, FilesInfo, LoginInfo, MessageResponse
-from .model.event import FriendRequest, IncomingMessage, GroupJoinRequest, InvitationRequest
+from .model.event import FriendRequest, IncomingMessage, GroupJoinRequest, InvitationRequest, IncomingForwardedMessage
 
 if TYPE_CHECKING:
     from .adapter import Adapter
@@ -304,7 +304,7 @@ class Bot(BaseBot):
         return result["url"]
 
     @api
-    async def get_forwarded_messages(self, forward_id: str) -> list[IncomingMessage]:
+    async def get_forwarded_messages(self, forward_id: str) -> list[IncomingForwardedMessage]:
         """获取合并转发消息内容
 
         Args:
@@ -313,7 +313,7 @@ class Bot(BaseBot):
             消息列表 (list[IncomingMessage])
         """
         result = await self._call("get_forwarded_messages", {"forward_id": forward_id})
-        return type_validate_python(list[IncomingMessage], result["messages"])
+        return type_validate_python(list[IncomingForwardedMessage], result["messages"])
 
     @api
     async def recall_private_message(self, *, user_id: int, message_seq: int) -> None:
@@ -524,7 +524,7 @@ class Bot(BaseBot):
         await self._call("send_group_announcement", {"group_id": group_id, "content": content, "image_uri": uri})
 
     @api
-    async def delete_group_announcement(self, *, group_id: int, announcement_id: int) -> None:
+    async def delete_group_announcement(self, *, group_id: int, announcement_id: str) -> None:
         """删除群公告
 
         Args:
@@ -624,6 +624,7 @@ class Bot(BaseBot):
         path: Optional[Union[Path, str]] = None,
         base64: Optional[str] = None,
         raw: Union[None, bytes, BytesIO] = None,
+        file_name: Optional[str] = None,
     ) -> str:
         """上传私聊文件
 
@@ -635,11 +636,16 @@ class Bot(BaseBot):
             path: 文件路径
             base64: 文件 base64 编码
             raw: 文件二进制数据
+            file_name: 文件名，若未提供则使用文件路径的文件名
         Returns:
             文件 ID
         """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        result = await self._call("upload_private_file", {"file_uri": uri, "user_id": user_id})
+        if file_name is None:
+            if not path:
+                raise ValueError("file_name must be provided if path or url is not given")
+            file_name = Path(path).name
+        result = await self._call("upload_private_file", {"file_uri": uri, "file_name": file_name, "user_id": user_id})
         return result["file_id"]
 
     @api
@@ -651,6 +657,8 @@ class Bot(BaseBot):
         path: Optional[Union[Path, str]] = None,
         base64: Optional[str] = None,
         raw: Union[None, bytes, BytesIO] = None,
+        file_name: Optional[str] = None,
+        parent_folder_id: Optional[str] = None,
     ) -> str:
         """上传群文件
 
@@ -662,11 +670,20 @@ class Bot(BaseBot):
             path: 文件路径
             base64: 文件 base64 编码
             raw: 文件二进制数据
+            file_name: 文件名，若未提供则使用文件路径中的文件名
+            parent_folder_id: 父文件夹 ID，默认为根目录
         Returns:
             文件 ID
         """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        result = await self._call("upload_group_file", {"file_uri": uri, "group_id": group_id})
+        if file_name is None:
+            if not path:
+                raise ValueError("file_name must be provided if path or url is not given")
+            file_name = Path(path).name
+        result = await self._call(
+            "upload_group_file",
+            {"file_uri": uri, "group_id": group_id, "file_name": file_name, "parent_folder_id": parent_folder_id},
+        )
         return result["file_id"]
 
     @api

@@ -345,7 +345,8 @@ class Message(BaseMessage[MessageSegment]):
                 messages = await bot.get_forwarded_messages(forward_id=forward_id)
                 new.append(
                     MessageSegment.forward(
-                        [MessageSegment.node(msg.sender_id, msg.sender.nickname, msg.message) for msg in messages]
+                        # TODO: 拿 user_id
+                        [MessageSegment.node(int(bot.self_id), msg.name, msg.message) for msg in messages]
                     )
                 )
             elif isinstance(seg, (MarketFace, LightAPP, XML)):
