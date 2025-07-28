@@ -14,7 +14,7 @@ from .config import ClientInfo
 from .utils import api, log, to_uri
 from .message import Reply, Message, MessageSegment
 from .event import Event, MessageEvent, MessageRecallEvent
-from .model.common import Group, Friend, Member, Announcement
+from .model.common import Group, Friend, Member, Announcement, Profile
 from .model.api import ImplInfo, FilesInfo, LoginInfo, MessageResponse
 from .model.event import FriendRequest, IncomingMessage, GroupJoinRequest, InvitationRequest, IncomingForwardedMessage
 
@@ -348,6 +348,18 @@ class Bot(BaseBot):
         return type_validate_python(ImplInfo, result)
 
     @api
+    async def get_user_profile(self, *, user_id: int) -> Profile:
+        """获取用户资料
+
+        Args:
+            user_id: 用户 QQ 号
+        Returns:
+            用户资料字典
+        """
+        result = await self._call("get_user_profile", {"user_id": user_id})
+        return type_validate_python(Profile, result)
+
+    @api
     async def get_friend_list(self, *, no_cache: bool = False) -> list[Friend]:
         """获取好友列表"""
         result = await self._call("get_friend_list", {"no_cache": no_cache})
@@ -597,23 +609,60 @@ class Bot(BaseBot):
         return type_validate_python(list[InvitationRequest], result["invitations"])
 
     @api
-    async def accept_request(self, *, request_id: str) -> None:
-        """同意请求
+    async def accept_friend_request(self, *, request_id: str) -> None:
+        """同意好友请求
 
         Args:
             request_id: 请求 ID
         """
-        await self._call("accept_request", {"request_id": request_id})
+        await self._call("accept_friend_request", {"request_id": request_id})
 
     @api
-    async def reject_request(self, *, request_id: str, reason: Optional[str] = None) -> None:
-        """拒绝请求
+    async def reject_friend_request(self, *, request_id: str, reason: Optional[str] = None) -> None:
+        """拒绝好友请求
 
         Args:
             request_id: 请求 ID
             reason: 拒绝理由
         """
-        await self._call("reject_request", locals())
+        await self._call("reject_friend_request", locals())
+
+    @api
+    async def accept_group_request(self, *, request_id: str) -> None:
+        """同意入群请求
+
+        Args:
+            request_id: 请求 ID
+        """
+        await self._call("accept_group_request", {"request_id": request_id})
+
+    @api
+    async def reject_group_request(self, *, request_id: str, reason: Optional[str] = None) -> None:
+        """拒绝入群请求
+
+        Args:
+            request_id: 请求 ID
+            reason: 拒绝理由
+        """
+        await self._call("reject_group_request", locals())
+
+    @api
+    async def accept_group_invitation(self, *, request_id: str) -> None:
+        """同意入群邀请
+
+        Args:
+            request_id: 请求 ID
+        """
+        await self._call("accept_group_invitation", {"request_id": request_id})
+
+    @api
+    async def reject_group_invitation(self, *, request_id: str) -> None:
+        """拒绝入群邀请
+
+        Args:
+            request_id: 请求 ID
+        """
+        await self._call("reject_group_invitation", locals())
 
     @api
     async def upload_private_file(

@@ -13,6 +13,40 @@ class FriendCategory(ModelBase):
     """分组名称"""
 
 
+class Profile(ModelBase):
+    """用户信息"""
+
+    nickname: str
+    """用户昵称"""
+
+    qid: Optional[str] = None
+    """用户 QID"""
+
+    age: int
+    """用户年龄"""
+
+    sex: Literal["male", "female", "unknown"]
+    """用户性别"""
+
+    remark: Optional[str] = None
+    """用户备注"""
+
+    bio: Optional[str] = None
+    """用户个性签名"""
+
+    level: Optional[int] = None
+    """用户等级"""
+
+    country: Optional[str] = None
+    """用户所在国家"""
+
+    city: Optional[str] = None
+    """用户所在城市"""
+
+    school: Optional[str] = None
+    """用户所在学校"""
+
+
 class Friend(ModelBase):
     """好友信息"""
 
