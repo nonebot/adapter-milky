@@ -48,7 +48,7 @@ class Event(BaseEvent, ModelBase):
 
     @property
     def is_private(self) -> bool:
-        return True
+        return False
 
     @property
     def event_type(self) -> str:
