@@ -14,8 +14,8 @@ from .config import ClientInfo
 from .utils import api, log, to_uri
 from .message import Reply, Message, MessageSegment
 from .event import Event, MessageEvent, MessageRecallEvent
-from .model.common import Group, Friend, Member, Announcement, Profile
 from .model.api import ImplInfo, FilesInfo, LoginInfo, MessageResponse
+from .model.common import Group, Friend, Member, Profile, Announcement
 from .model.event import FriendRequest, IncomingMessage, GroupJoinRequest, InvitationRequest, IncomingForwardedMessage
 
 if TYPE_CHECKING:
