@@ -396,6 +396,18 @@ class Bot(BaseBot):
         return type_validate_python(Member, result["member"])
 
     @api
+    async def get_cookies(self, *, domain: str):
+        """获取指定域名的 Cookie"""
+        result = await self._call("get_cookies", locals())
+        return result["cookies"]
+
+    @api
+    async def get_csrf_token(self):
+        """获取 CSRF Token"""
+        result = await self._call("get_csrf_token")
+        return result["csrf_token"]
+
+    @api
     async def send_friend_nudge(self, *, user_id: int, is_self: bool = False) -> None:
         """发送好友头像双击动作"""
         await self._call("send_friend_nudge", locals())
