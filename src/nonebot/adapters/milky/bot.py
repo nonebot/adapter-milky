@@ -271,7 +271,6 @@ class Bot(BaseBot):
         *,
         message_scene: str,
         peer_id: int,
-        direction: Literal["newer", "older"],
         start_message_seq: Optional[int] = None,
         limit: int = 20,
     ) -> list[IncomingMessage]:
@@ -280,7 +279,6 @@ class Bot(BaseBot):
         Args:
             message_scene: 消息场景
             peer_id: 好友 QQ 号或群号
-            direction: 消息获取方向
             start_message_seq: 起始消息序列号，不提供则从最新消息开始
             limit: 获取的最大消息数量
         Returns:
