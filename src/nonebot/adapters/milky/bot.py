@@ -3,7 +3,7 @@ from io import BytesIO
 from pathlib import Path
 from collections.abc import Sequence
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Literal, Optional
+from typing import TYPE_CHECKING, Any, Union, Optional
 
 from nonebot.message import handle_event
 from nonebot.compat import type_validate_python
@@ -396,7 +396,7 @@ class Bot(BaseBot):
     @api
     async def get_cookies(self, *, domain: str):
         """获取指定域名的 Cookie"""
-        result = await self._call("get_cookies", locals())
+        result = await self._call("get_cookies", {"domain": domain})
         return result["cookies"]
 
     @api
