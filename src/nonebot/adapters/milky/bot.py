@@ -406,7 +406,7 @@ class Bot(BaseBot):
         await self._call("send_profile_like", locals())
 
     @api
-    async def set_group_name(self, *, group_id: int, name: str) -> None:
+    async def set_group_name(self, *, group_id: int, new_group_name: str) -> None:
         """设置群名称"""
         await self._call("set_group_name", locals())
 
@@ -784,13 +784,13 @@ class Bot(BaseBot):
         await self._call("move_group_file", locals())
 
     @api
-    async def rename_group_file(self, *, group_id: int, file_id: str, new_name: str) -> None:
+    async def rename_group_file(self, *, group_id: int, file_id: str, new_file_name: str) -> None:
         """重命名群文件
 
         Args:
             group_id: 群号
             file_id: 文件 ID
-            new_name: 新文件名
+            new_file_name: 新文件名
         """
         await self._call("rename_group_file", locals())
 
@@ -818,13 +818,13 @@ class Bot(BaseBot):
         return result["folder_id"]
 
     @api
-    async def rename_group_folder(self, *, group_id: int, folder_id: str, new_name: str) -> None:
+    async def rename_group_folder(self, *, group_id: int, folder_id: str, new_folder_name: str) -> None:
         """重命名群文件夹
 
         Args:
             group_id: 群号
             folder_id: 文件夹 ID
-            new_name: 新文件夹名
+            new_folder_name: 新文件夹名
         """
         await self._call("rename_group_folder", locals())
 

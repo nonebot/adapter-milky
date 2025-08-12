@@ -75,7 +75,7 @@ class Group(ModelBase):
     group_id: int
     """群号"""
 
-    name: str
+    group_name: str
     """群名"""
 
     member_count: int
@@ -116,6 +116,9 @@ class Member(ModelBase):
 
     last_sent_time: int
     """成员最后发言时间"""
+
+    shut_up_end_time: Optional[int] = None
+    """成员禁言结束时间"""
 
 
 class Announcement(ModelBase):
