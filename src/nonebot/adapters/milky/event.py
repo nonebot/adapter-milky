@@ -415,7 +415,7 @@ class GroupNameChangeData(ModelBase):
     group_id: int
     """群号"""
 
-    name: str
+    new_group_name: str
     """新的群名称"""
 
     operator_id: int

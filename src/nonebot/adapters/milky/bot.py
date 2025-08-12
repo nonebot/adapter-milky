@@ -3,7 +3,7 @@ from io import BytesIO
 from pathlib import Path
 from collections.abc import Sequence
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Literal, Optional
+from typing import TYPE_CHECKING, Any, Union, Optional
 
 from nonebot.message import handle_event
 from nonebot.compat import type_validate_python
@@ -271,7 +271,6 @@ class Bot(BaseBot):
         *,
         message_scene: str,
         peer_id: int,
-        direction: Literal["newer", "older"],
         start_message_seq: Optional[int] = None,
         limit: int = 20,
     ) -> list[IncomingMessage]:
@@ -280,7 +279,6 @@ class Bot(BaseBot):
         Args:
             message_scene: 消息场景
             peer_id: 好友 QQ 号或群号
-            direction: 消息获取方向
             start_message_seq: 起始消息序列号，不提供则从最新消息开始
             limit: 获取的最大消息数量
         Returns:
@@ -396,6 +394,18 @@ class Bot(BaseBot):
         return type_validate_python(Member, result["member"])
 
     @api
+    async def get_cookies(self, *, domain: str):
+        """获取指定域名的 Cookie"""
+        result = await self._call("get_cookies", {"domain": domain})
+        return result["cookies"]
+
+    @api
+    async def get_csrf_token(self):
+        """获取 CSRF Token"""
+        result = await self._call("get_csrf_token")
+        return result["csrf_token"]
+
+    @api
     async def send_friend_nudge(self, *, user_id: int, is_self: bool = False) -> None:
         """发送好友头像双击动作"""
         await self._call("send_friend_nudge", locals())
@@ -406,7 +416,7 @@ class Bot(BaseBot):
         await self._call("send_profile_like", locals())
 
     @api
-    async def set_group_name(self, *, group_id: int, name: str) -> None:
+    async def set_group_name(self, *, group_id: int, new_group_name: str) -> None:
         """设置群名称"""
         await self._call("set_group_name", locals())
 
@@ -784,13 +794,13 @@ class Bot(BaseBot):
         await self._call("move_group_file", locals())
 
     @api
-    async def rename_group_file(self, *, group_id: int, file_id: str, new_name: str) -> None:
+    async def rename_group_file(self, *, group_id: int, file_id: str, new_file_name: str) -> None:
         """重命名群文件
 
         Args:
             group_id: 群号
             file_id: 文件 ID
-            new_name: 新文件名
+            new_file_name: 新文件名
         """
         await self._call("rename_group_file", locals())
 
@@ -818,13 +828,13 @@ class Bot(BaseBot):
         return result["folder_id"]
 
     @api
-    async def rename_group_folder(self, *, group_id: int, folder_id: str, new_name: str) -> None:
+    async def rename_group_folder(self, *, group_id: int, folder_id: str, new_folder_name: str) -> None:
         """重命名群文件夹
 
         Args:
             group_id: 群号
             folder_id: 文件夹 ID
-            new_name: 新文件夹名
+            new_folder_name: 新文件夹名
         """
         await self._call("rename_group_folder", locals())
 

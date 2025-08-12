@@ -120,7 +120,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         segments: "Message",
     ) -> "OutgoingForwardedMessage":
         """合并转发消息节点"""
-        return OutgoingForwardedMessage(user_id=user_id, name=name, segments=segments)
+        return OutgoingForwardedMessage(user_id=user_id, sender_name=name, segments=segments)
 
 
 class TextData(TypedDict):
@@ -219,7 +219,7 @@ class IncomingForwardData(TypedDict):
 @dataclass
 class OutgoingForwardedMessage:
     user_id: int
-    name: str
+    sender_name: str
     segments: list[MessageSegment]
 
 
@@ -240,7 +240,7 @@ class Forward(MessageSegment):
                     "messages": [
                         OutgoingForwardedMessage(
                             user_id=msg["user_id"],
-                            name=msg["name"],
+                            sender_name=msg["name"],
                             segments=Message.from_elements(msg["segments"]),
                         )
                         for msg in data["messages"]
@@ -258,7 +258,7 @@ class Forward(MessageSegment):
                 "messages": [
                     {
                         "user_id": message.user_id,
-                        "name": message.name,
+                        "sender_name": message.sender_name,
                         "segments": [seg.dump() for seg in message.segments],
                     }
                     for message in self.data["messages"]
@@ -346,7 +346,7 @@ class Message(BaseMessage[MessageSegment]):
                 new.append(
                     MessageSegment.forward(
                         # TODO: 拿 user_id
-                        [MessageSegment.node(int(bot.self_id), msg.name, msg.message) for msg in messages]
+                        [MessageSegment.node(int(bot.self_id), msg.sender_name, msg.message) for msg in messages]
                     )
                 )
             elif isinstance(seg, (MarketFace, LightAPP, XML)):

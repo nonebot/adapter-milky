@@ -48,7 +48,7 @@ class IncomingMessage(ModelBase):
 class IncomingForwardedMessage(ModelBase):
     """接收的转发消息"""
 
-    name: str
+    sender_name: str
     """发送者名称"""
 
     avatar_url: str
