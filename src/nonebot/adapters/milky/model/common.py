@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 from .base import ModelBase
 
@@ -19,7 +19,7 @@ class Profile(ModelBase):
     nickname: str
     """用户昵称"""
 
-    qid: Optional[str] = None
+    qid: str
     """用户 QID"""
 
     age: int
@@ -28,27 +28,27 @@ class Profile(ModelBase):
     sex: Literal["male", "female", "unknown"]
     """用户性别"""
 
-    remark: Optional[str] = None
+    remark: str
     """用户备注"""
 
-    bio: Optional[str] = None
+    bio: str
     """用户个性签名"""
 
-    level: Optional[int] = None
+    level: int
     """用户等级"""
 
-    country: Optional[str] = None
+    country: str
     """用户所在国家"""
 
-    city: Optional[str] = None
+    city: str
     """用户所在城市"""
 
-    school: Optional[str] = None
+    school: str
     """用户所在学校"""
 
 
 class Friend(ModelBase):
-    """好友信息"""
+    """好友实体"""
 
     user_id: int
     """用户 QQ号"""
@@ -59,13 +59,13 @@ class Friend(ModelBase):
     sex: Literal["male", "female", "unknown"]
     """用户性别"""
 
-    qid: Optional[str] = None
+    qid: str
     """用户 QID"""
 
     remark: str
     """好友备注"""
 
-    category: Optional[FriendCategory] = None
+    category: FriendCategory
     """好友分组"""
 
 
@@ -99,10 +99,11 @@ class Member(ModelBase):
 
     group_id: int
     """群号"""
+
     card: str
     """成员备注"""
 
-    title: Optional[str] = None
+    title: str
     """成员头衔"""
 
     level: int
@@ -200,3 +201,176 @@ class FolderInfo(ModelBase):
 
     file_count: int
     """文件数量"""
+
+
+class GroupEssenceMessage(ModelBase):
+    """群精华消息"""
+
+    group_id: int
+    """群号"""
+
+    message_seq: int
+    """消息序列号"""
+
+    message_time: int
+    """消息发送时的 Unix 时间戳（秒）"""
+
+    sender_id: int
+    """发送者 QQ 号"""
+
+    sender_name: str
+    """发送者名称"""
+
+    operator_id: int
+    """设置精华的操作者 QQ 号"""
+
+    operator_name: str
+    """设置精华的操作者名称"""
+
+    operation_time: int
+    """消息被设置精华时的 Unix 时间戳（秒）"""
+
+    segments: list[dict]
+    """消息段列表"""
+
+
+class FriendRequest(ModelBase):
+    """好友请求"""
+
+    time: int
+    """请求发起时间"""
+
+    initiator_id: int
+    """请求发起者 QQ 号"""
+
+    initiator_uid: str
+    """请求发起者 UID"""
+
+    target_user_id: int
+    """目标用户 QQ 号"""
+
+    target_user_uid: str
+    """目标用户 UID"""
+
+    state: Literal["pending", "accepted", "rejected", "ignored"]
+    """请求状态"""
+
+    comment: str
+    """申请附加信息"""
+
+    via: str
+    """申请来源"""
+
+    is_filtered: bool
+    """请求是否被过滤（发起自风险账户）"""
+
+
+class GroupJoinRequestNotification(ModelBase):
+    """用户入群请求"""
+
+    type: Literal["join_request"] = "join_request"
+    group_id: int
+    """群号"""
+
+    notification_seq: int
+    """通知序列号"""
+
+    is_filtered: bool
+    """请求是否被过滤（发起自风险账户）"""
+
+    initiator_id: int
+    """发起者 QQ 号"""
+
+    state: Literal["pending", "accepted", "rejected", "ignored"]
+    """请求状态"""
+
+    operator_id: Optional[int] = None
+    """处理请求的管理员 QQ 号"""
+
+    comment: str
+    """入群请求附加信息"""
+
+
+class GroupAdminChangeNotification(ModelBase):
+    """群管理员变更通知"""
+
+    type: Literal["admin_change"] = "admin_change"
+    group_id: int
+    """群号"""
+
+    notification_seq: int
+    """通知序列号"""
+
+    target_user_id: int
+    """被设置/取消用户 QQ 号"""
+
+    is_set: bool
+    """是否被设置为管理员，`false` 表示被取消管理员"""
+
+    operator_id: int
+    """操作者（群主）QQ 号"""
+
+
+class GroupKickNotification(ModelBase):
+    """群成员被移除通知"""
+
+    type: Literal["kick"] = "kick"
+    group_id: int
+    """群号"""
+
+    notification_seq: int
+    """通知序列号"""
+
+    target_user_id: int
+    """被移除用户 QQ 号"""
+
+    operator_id: int
+    """移除用户的管理员 QQ 号"""
+
+
+class GroupQuitNotification(ModelBase):
+    """群成员退群通知"""
+
+    type: Literal["quit"] = "quit"
+    group_id: int
+    """群号"""
+
+    notification_seq: int
+    """通知序列号"""
+
+    target_user_id: int
+    """退群用户 QQ 号"""
+
+
+class GroupInvitedJoinRequestNotification(ModelBase):
+    """群成员邀请他人入群请求"""
+
+    type: Literal["invited_join_request"] = "invited_join_request"
+    group_id: int
+    """群号"""
+
+    notification_seq: int
+    """通知序列号"""
+
+    initiator_id: int
+    """邀请者 QQ 号"""
+
+    target_user_id: int
+    """被邀请用户 QQ 号"""
+
+    state: Literal["pending", "accepted", "rejected", "ignored"]
+    """请求状态"""
+
+    operator_id: Optional[int] = None
+    """处理请求的管理员 QQ 号"""
+
+
+# Union type for all group notifications
+GroupNotification = Union[
+    GroupJoinRequestNotification,
+    GroupAdminChangeNotification,
+    GroupKickNotification,
+    GroupQuitNotification,
+    GroupInvitedJoinRequestNotification,
+]
+"""群通知"""

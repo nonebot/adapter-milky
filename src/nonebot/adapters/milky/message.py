@@ -103,10 +103,16 @@ class MessageSegment(BaseMessageSegment["Message"]):
         base64: Optional[str] = None,
         raw: Union[None, bytes, BytesIO] = None,
         thumb_url: Optional[str] = None,
+        thumb_path: Optional[Union[Path, str]] = None,
+        thumb_base64: Optional[str] = None,
+        thumb_raw: Union[None, bytes, BytesIO] = None,
     ):
         """视频消息段"""
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        return Video("video", {"uri": uri, "thumb_url": thumb_url})
+        thumb_uri = to_uri(
+            url=thumb_url, path=thumb_path, base64=thumb_base64, raw=thumb_raw
+        ) if thumb_url or thumb_path or thumb_base64 or thumb_raw else None
+        return Video("video", {"uri": uri, "thumb_uri": thumb_uri})
 
     @staticmethod
     def forward(messages: list["OutgoingForwardedMessage"]) -> "Forward":
@@ -167,6 +173,8 @@ class Reply(MessageSegment):
 class IncomingImageData(TypedDict):
     resource_id: str
     temp_url: str
+    width: int
+    height: int
     summary: NotRequired[str]
     sub_type: Literal["normal", "sticker"]
 
@@ -200,11 +208,14 @@ class Record(MessageSegment):
 class IncomingVideoData(TypedDict):
     resource_id: str
     temp_url: str
+    width: int
+    height: int
+    duration: int
 
 
 class OutgoingVideoData(TypedDict):
     uri: str
-    thumb_url: Optional[str]
+    thumb_uri: Optional[str]
 
 
 @dataclass

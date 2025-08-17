@@ -1,8 +1,9 @@
 from enum import Enum
+from typing import Literal
 
 from ..message import Reply
 from .base import ModelBase
-from .common import FileInfo, FolderInfo
+from .common import FileInfo, FolderInfo, Friend, Group, Member
 
 
 class MessageResponse(ModelBase):
@@ -68,5 +69,5 @@ class FilesInfo(ModelBase):
     files: list[FileInfo]
     """文件列表"""
 
-    folder: list[FolderInfo]
+    folders: list[FolderInfo]
     """文件夹列表"""
