@@ -276,7 +276,7 @@ class Bot(BaseBot):
         peer_id: int,
         start_message_seq: Optional[int] = None,
         limit: int = 20,
-    ) -> list[IncomingMessage]:
+    ) -> tuple[list[IncomingMessage], int]:
         """获取历史消息
 
         Args:
@@ -285,11 +285,11 @@ class Bot(BaseBot):
             start_message_seq: 起始消息序列号，不提供则从最新消息开始
             limit: 获取的最大消息数量
         Returns:
-            消息列表 (list[IncomingMessage])
+            消息列表 (list[IncomingMessage]) 和下一页起始消息序列号
         """
 
         result = await self._call("get_history_messages", locals())
-        return type_validate_python(list[IncomingMessage], result["messages"])
+        return type_validate_python(list[IncomingMessage], result["messages"]), result["next_message_seq"]
 
     @api
     async def get_resource_temp_url(self, resource_id: str) -> str:
@@ -686,7 +686,7 @@ class Bot(BaseBot):
         return type_validate_python(list[GroupNotification], result["notifications"]), result["next_notification_seq"]
 
     @api
-    async def accept_group_request(self, *, notification_seq: str, is_filtered: bool = False) -> None:
+    async def accept_group_request(self, *, notification_seq: int, is_filtered: bool = False) -> None:
         """同意群请求
 
         Args:
@@ -696,7 +696,7 @@ class Bot(BaseBot):
         await self._call("accept_group_request", locals())
 
     @api
-    async def reject_group_request(self, *, notification_seq: str, is_filtered: bool = False,
+    async def reject_group_request(self, *, notification_seq: int, is_filtered: bool = False,
                                    reason: Optional[str] = None) -> None:
         """拒绝群请求
 
@@ -708,7 +708,7 @@ class Bot(BaseBot):
         await self._call("reject_group_request", locals())
 
     @api
-    async def accept_group_invitation(self, *, group_id: int, invitation_seq: str) -> None:
+    async def accept_group_invitation(self, *, group_id: int, invitation_seq: int) -> None:
         """同意群邀请
 
         Args:
@@ -718,7 +718,7 @@ class Bot(BaseBot):
         await self._call("accept_group_invitation", locals())
 
     @api
-    async def reject_group_invitation(self, *, group_id: int, invitation_seq: str) -> None:
+    async def reject_group_invitation(self, *, group_id: int, invitation_seq: int) -> None:
         """拒绝群邀请
 
         Args:

@@ -751,7 +751,7 @@ class GroupInvitationData(ModelBase):
 class GroupInvitationEvent(RequestEvent):
     """邀请机器人(自己)入群请求事件"""
 
-    __event_type__ = "group_invitation_request"
+    __event_type__ = "group_invitation"
 
     data: GroupInvitationData
 
