@@ -3,7 +3,7 @@ from io import BytesIO
 from pathlib import Path
 from collections.abc import Sequence
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Optional, Coroutine
+from typing import TYPE_CHECKING, Any, Union, Optional
 
 from nonebot.message import handle_event
 from nonebot.compat import type_validate_python
@@ -455,7 +455,8 @@ class Bot(BaseBot):
         await self._call("accept_friend_request", locals())
 
     @api
-    async def reject_friend_request(self, *, initiator_uid: str, is_filtered: bool = False, reason: Optional[str] = None) -> None:
+    async def reject_friend_request(self, *, initiator_uid: str, is_filtered: bool = False,
+                                    reason: Optional[str] = None) -> None:
         """拒绝好友请求
 
         Args:
@@ -695,7 +696,8 @@ class Bot(BaseBot):
         await self._call("accept_group_request", locals())
 
     @api
-    async def reject_group_request(self, *, notification_seq: str, is_filtered: bool = False, reason: Optional[str] = None) -> None:
+    async def reject_group_request(self, *, notification_seq: str, is_filtered: bool = False,
+                                   reason: Optional[str] = None) -> None:
         """拒绝群请求
 
         Args:

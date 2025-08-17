@@ -1,9 +1,8 @@
 from enum import Enum
-from typing import Literal
 
 from ..message import Reply
 from .base import ModelBase
-from .common import FileInfo, FolderInfo, Friend, Group, Member
+from .common import FileInfo, FolderInfo
 
 
 class MessageResponse(ModelBase):
