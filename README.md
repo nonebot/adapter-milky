@@ -16,7 +16,7 @@ _✨ NoneBot2 Milky 协议适配 / Milky Protocol Adapter for NoneBot2 ✨_
 
 ### 协议端
 
-[Lagrange,Milky (WIP)](https://github.com/LagrangeDev/LagrangeV2/)
+[Lagrange.Milky (WIP)](https://github.com/LagrangeDev/LagrangeV2/)
 
 ## 配置
 
@@ -83,6 +83,7 @@ MILKY_WEBHOOK='
   "port": "8081",
   "access_token": "xxx"
 }
+'
 ```
 
 `host` 与 `port` 为 Milky 协议端设置的监听地址与端口，
