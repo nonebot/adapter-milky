@@ -142,7 +142,9 @@ class MessageEvent(Event):
 
     @override
     def get_event_description(self) -> str:
-        return escape_tag(f"Message {self.message_id} from {self.data.sender}: {''.join(str(self.message))}")
+        return escape_tag(
+            f"Message {self.message_id} from {self.data.sender_id} in {self.data.peer_id}: {''.join(str(self.message))}"
+        )
 
     @property
     def reply_to(self) -> Reply:
@@ -161,6 +163,10 @@ class TempMessageEvent(MessageEvent):
 
 class FriendMessageEvent(MessageEvent):
     """好友消息事件"""
+
+    @override
+    def get_event_description(self) -> str:
+        return escape_tag(f"Message {self.message_id} from {self.data.sender_id}: {''.join(str(self.message))}")
 
 
 class GroupMessageEvent(MessageEvent):
