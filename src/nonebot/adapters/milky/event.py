@@ -7,7 +7,7 @@ from nonebot.compat import model_dump, model_validator, type_validate_python
 
 from .model import ModelBase
 from .message import Reply, Message, MessageSegment
-from .model.event import FriendRequest, IncomingMessage, GroupJoinRequest, InvitationRequest
+from .model.message import IncomingMessage
 
 
 class Event(BaseEvent, ModelBase):
@@ -180,7 +180,7 @@ class MessageRecallData(ModelBase):
     message_seq: int
     """消息序列号"""
 
-    operator_id: Optional[int] = None
+    operator_id: int
     """操作人 QQ号"""
 
 
@@ -264,6 +264,9 @@ class FriendFileUploadData(ModelBase):
 
     file_size: int
     """文件大小"""
+
+    file_hash: str
+    """文件的 TriSHA1 哈希值"""
 
     is_self: bool
     """是否是自己上传的文件"""
@@ -621,13 +624,29 @@ class RequestEvent(Event):
         return "request"
 
 
+class FriendRequestData(ModelBase):
+    """好友请求数据"""
+
+    initiator_id: int
+    """申请好友的用户 QQ 号"""
+
+    initiator_uid: str
+    """用户 UID"""
+
+    comment: str
+    """申请附加信息"""
+
+    via: str
+    """申请来源"""
+
+
 @register_event_class
 class FriendRequestEvent(RequestEvent):
     """好友请求事件"""
 
     __event_type__ = "friend_request"
 
-    data: FriendRequest
+    data: FriendRequestData
 
     @override
     def get_user_id(self) -> str:
@@ -646,13 +665,32 @@ class FriendRequestEvent(RequestEvent):
         return True
 
 
+class GroupJoinRequestData(ModelBase):
+    """入群申请数据"""
+
+    group_id: int
+    """群号"""
+
+    notification_seq: int
+    """请求对应的通知序列号"""
+
+    is_filtered: bool
+    """请求是否被过滤（发起自风险账户）"""
+
+    initiator_id: int
+    """申请入群的用户 QQ 号"""
+
+    comment: str
+    """申请附加信息"""
+
+
 @register_event_class
-class GroupRequestEvent(RequestEvent):
+class GroupJoinRequestEvent(RequestEvent):
     """入群请求事件"""
 
-    __event_type__ = "group_request"
+    __event_type__ = "group_join_request"
 
-    data: GroupJoinRequest
+    data: GroupJoinRequestData
 
     @override
     def get_user_id(self) -> str:
@@ -663,13 +701,59 @@ class GroupRequestEvent(RequestEvent):
         return f"{self.data.group_id}_{self.data.initiator_id}"
 
 
+class GroupInvitedJoinRequestData(ModelBase):
+    """群成员邀请他人入群请求数据"""
+
+    group_id: int
+    """群号"""
+
+    notification_seq: int
+    """请求对应的通知序列号"""
+
+    initiator_id: int
+    """邀请者 QQ 号"""
+
+    target_user_id: int
+    """被邀请者 QQ 号"""
+
+
+@register_event_class
+class GroupInvitedJoinRequestEvent(RequestEvent):
+    """群成员邀请他人入群请求事件"""
+
+    __event_type__ = "group_invited_join_request"
+
+    data: GroupInvitedJoinRequestData
+
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.initiator_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.initiator_id}"
+
+
+class GroupInvitationData(ModelBase):
+    """邀请机器人(自己)入群请求数据"""
+
+    group_id: int
+    """群号"""
+
+    invitation_seq: int
+    """邀请序列号"""
+
+    initiator_id: int
+    """邀请者 QQ 号"""
+
+
 @register_event_class
 class GroupInvitationEvent(RequestEvent):
     """邀请机器人(自己)入群请求事件"""
 
-    __event_type__ = "group_invitation_request"
+    __event_type__ = "group_invitation"
 
-    data: InvitationRequest
+    data: GroupInvitationData
 
     @override
     def get_user_id(self) -> str:

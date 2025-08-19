@@ -68,5 +68,5 @@ class FilesInfo(ModelBase):
     files: list[FileInfo]
     """文件列表"""
 
-    folder: list[FolderInfo]
+    folders: list[FolderInfo]
     """文件夹列表"""
