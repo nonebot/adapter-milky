@@ -109,9 +109,11 @@ class MessageSegment(BaseMessageSegment["Message"]):
     ):
         """视频消息段"""
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
-        thumb_uri = to_uri(
-            url=thumb_url, path=thumb_path, base64=thumb_base64, raw=thumb_raw
-        ) if thumb_url or thumb_path or thumb_base64 or thumb_raw else None
+        thumb_uri = (
+            to_uri(url=thumb_url, path=thumb_path, base64=thumb_base64, raw=thumb_raw)
+            if thumb_url or thumb_path or thumb_base64 or thumb_raw
+            else None
+        )
         return Video("video", {"uri": uri, "thumb_uri": thumb_uri})
 
     @staticmethod

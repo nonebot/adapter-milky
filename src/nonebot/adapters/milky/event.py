@@ -2,12 +2,13 @@ from copy import deepcopy
 from typing_extensions import override
 from typing import TYPE_CHECKING, Literal, TypeVar, Optional
 
+from nonebot.utils import escape_tag
 from nonebot.internal.adapter import Event as BaseEvent
 from nonebot.compat import model_dump, model_validator, type_validate_python
 
 from .model import ModelBase
-from .message import Reply, Message, MessageSegment
 from .model.message import IncomingMessage
+from .message import Reply, Message, MessageSegment
 
 
 class Event(BaseEvent, ModelBase):
@@ -25,24 +26,31 @@ class Event(BaseEvent, ModelBase):
     data: dict
     """事件数据"""
 
+    @override
     def get_type(self) -> str:
         return ""
 
+    @override
     def get_event_name(self) -> str:
         return self.__event_type__
 
+    @override
     def get_event_description(self) -> str:
-        return self.__event_type__
+        return escape_tag(str(model_dump(self)))
 
+    @override
     def get_user_id(self) -> str:
         raise ValueError("This event does not have a user_id")
 
+    @override
     def get_session_id(self) -> str:
         raise ValueError("This event does not have a session_id")
 
+    @override
     def get_message(self) -> "Message":
         raise ValueError("This event does not have a message")
 
+    @override
     def is_tome(self) -> bool:
         return False
 
@@ -134,7 +142,7 @@ class MessageEvent(Event):
 
     @override
     def get_event_description(self) -> str:
-        return f"{self.message_id}: {''.join(str(self.message))}"
+        return escape_tag(f"Message {self.message_id} from {self.data.sender}: {''.join(str(self.message))}")
 
     @property
     def reply_to(self) -> Reply:
@@ -793,4 +801,4 @@ class BotOfflineEvent(MetaEvent):
 
     @override
     def get_event_description(self) -> str:
-        return f"Bot offline: {self.data.reason}"
+        return f"Bot offline: {escape_tag(self.data.reason)}"

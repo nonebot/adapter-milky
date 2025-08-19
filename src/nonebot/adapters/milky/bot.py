@@ -13,11 +13,19 @@ from nonebot.adapters import Bot as BaseBot
 from .config import ClientInfo
 from .utils import api, log, to_uri
 from .message import Reply, Message, MessageSegment
+from .model.common import Group, Friend, Member, Profile
 from .event import Event, MessageEvent, MessageRecallEvent
-from .model.api import ImplInfo, FilesInfo, LoginInfo, MessageResponse
-from .model.common import Group, Friend, Member, Profile, Announcement, \
-    FriendRequest, GroupNotification, GroupEssenceMessage
 from .model.message import IncomingMessage, IncomingForwardedMessage
+from .model.api import (
+    ImplInfo,
+    FilesInfo,
+    LoginInfo,
+    Announcement,
+    FriendRequest,
+    MessageResponse,
+    GroupNotification,
+    GroupEssenceMessage,
+)
 
 if TYPE_CHECKING:
     from .adapter import Adapter
@@ -455,8 +463,9 @@ class Bot(BaseBot):
         await self._call("accept_friend_request", locals())
 
     @api
-    async def reject_friend_request(self, *, initiator_uid: str, is_filtered: bool = False,
-                                    reason: Optional[str] = None) -> None:
+    async def reject_friend_request(
+        self, *, initiator_uid: str, is_filtered: bool = False, reason: Optional[str] = None
+    ) -> None:
         """拒绝好友请求
 
         Args:
@@ -622,7 +631,7 @@ class Bot(BaseBot):
         result = await self._call("get_group_essence_messages", locals())
         return {
             "messages": type_validate_python(list[GroupEssenceMessage], result["messages"]),
-            "is_end": result["is_end"]
+            "is_end": result["is_end"],
         }
 
     @api
@@ -635,7 +644,6 @@ class Bot(BaseBot):
             is_set: 是否设置为精华消息，false 表示取消精华
         """
         await self._call("set_group_essence_message", locals())
-
 
     @api
     async def quit_group(self, *, group_id: int) -> None:
@@ -671,8 +679,9 @@ class Bot(BaseBot):
         await self._call("send_group_nudge", locals())
 
     @api
-    async def get_group_notifications(self, *, start_notification_seq: Optional[int] = None,
-                                     is_filtered: bool = False, limit: int = 20) -> tuple[list[GroupNotification], int]:
+    async def get_group_notifications(
+        self, *, start_notification_seq: Optional[int] = None, is_filtered: bool = False, limit: int = 20
+    ) -> tuple[list[GroupNotification], int]:
         """获取群通知
 
         Args:
@@ -696,8 +705,9 @@ class Bot(BaseBot):
         await self._call("accept_group_request", locals())
 
     @api
-    async def reject_group_request(self, *, notification_seq: int, is_filtered: bool = False,
-                                   reason: Optional[str] = None) -> None:
+    async def reject_group_request(
+        self, *, notification_seq: int, is_filtered: bool = False, reason: Optional[str] = None
+    ) -> None:
         """拒绝群请求
 
         Args:
@@ -839,8 +849,9 @@ class Bot(BaseBot):
         return type_validate_python(FilesInfo, result)
 
     @api
-    async def move_group_file(self, *, group_id: int, file_id: str, parent_folder_id: str = "/",
-                             target_folder_id: str = "/") -> None:
+    async def move_group_file(
+        self, *, group_id: int, file_id: str, parent_folder_id: str = "/", target_folder_id: str = "/"
+    ) -> None:
         """移动群文件
 
         Args:
@@ -852,8 +863,9 @@ class Bot(BaseBot):
         await self._call("move_group_file", locals())
 
     @api
-    async def rename_group_file(self, *, group_id: int, file_id: str, parent_folder_id: str = "/",
-                               new_file_name: str) -> None:
+    async def rename_group_file(
+        self, *, group_id: int, file_id: str, parent_folder_id: str = "/", new_file_name: str
+    ) -> None:
         """重命名群文件
 
         Args:
