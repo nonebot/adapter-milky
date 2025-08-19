@@ -5,7 +5,7 @@
 groups = ["default", "dev", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:13237db43d273b525a4f219d90e6c7df1fcf078a1792e7e432d8dbd700941f2a"
+content_hash = "sha256:a317eebafe167cd4535a4d4012fffcd05654623f784a8bac41dd2c20710de333"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -46,7 +46,7 @@ name = "asgiref"
 version = "3.9.1"
 requires_python = ">=3.9"
 summary = "ASGI specs, helper code, and adapters"
-groups = ["test"]
+groups = ["dev", "test"]
 dependencies = [
     "typing-extensions>=4; python_version < \"3.11\"",
 ]
@@ -59,7 +59,7 @@ files = [
 name = "async-asgi-testclient"
 version = "1.4.11"
 summary = "Async client for testing ASGI web applications"
-groups = ["test"]
+groups = ["dev", "test"]
 dependencies = [
     "multidict<7.0,>=4.0",
     "requests~=2.21",
@@ -136,7 +136,7 @@ name = "charset-normalizer"
 version = "3.4.3"
 requires_python = ">=3.7"
 summary = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
-groups = ["test"]
+groups = ["dev", "test"]
 files = [
     {file = "charset_normalizer-3.4.3-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:fb7f67a1bfa6e40b438170ebdc8158b78dc465a5a67b6dde178a46987b244a72"},
     {file = "charset_normalizer-3.4.3-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:cc9370a2da1ac13f0153780040f465839e6cccb4a1e44810124b4e22483c93fe"},
@@ -361,7 +361,7 @@ name = "iniconfig"
 version = "2.1.0"
 requires_python = ">=3.8"
 summary = "brain-dead simple config-ini parsing"
-groups = ["test"]
+groups = ["dev", "test"]
 files = [
     {file = "iniconfig-2.1.0-py3-none-any.whl", hash = "sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760"},
     {file = "iniconfig-2.1.0.tar.gz", hash = "sha256:3abbd2e30b36733fee78f9c7f7308f2d0050e88f0087fd25c2645f63c773e1c7"},
@@ -635,7 +635,7 @@ name = "nonebug"
 version = "0.4.3"
 requires_python = "<4.0,>=3.9"
 summary = "nonebot2 test framework"
-groups = ["test"]
+groups = ["dev", "test"]
 dependencies = [
     "asgiref<4.0.0,>=3.4.0",
     "async-asgi-testclient<2.0.0,>=1.4.8",
@@ -686,7 +686,7 @@ name = "pluggy"
 version = "1.6.0"
 requires_python = ">=3.9"
 summary = "plugin and hook calling mechanisms for python"
-groups = ["test"]
+groups = ["dev", "test"]
 files = [
     {file = "pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746"},
     {file = "pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3"},
@@ -932,7 +932,7 @@ name = "pygments"
 version = "2.19.2"
 requires_python = ">=3.8"
 summary = "Pygments is a syntax highlighting package written in Python."
-groups = ["test"]
+groups = ["dev", "test"]
 files = [
     {file = "pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b"},
     {file = "pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887"},
@@ -953,7 +953,7 @@ name = "pytest"
 version = "8.4.1"
 requires_python = ">=3.9"
 summary = "pytest: simple powerful testing with Python"
-groups = ["test"]
+groups = ["dev", "test"]
 dependencies = [
     "colorama>=0.4; sys_platform == \"win32\"",
     "exceptiongroup>=1; python_version < \"3.11\"",
@@ -1000,7 +1000,7 @@ name = "requests"
 version = "2.32.5"
 requires_python = ">=3.9"
 summary = "Python HTTP for Humans."
-groups = ["test"]
+groups = ["dev", "test"]
 dependencies = [
     "certifi>=2017.4.17",
     "charset-normalizer<4,>=2",
@@ -1122,7 +1122,7 @@ name = "urllib3"
 version = "2.5.0"
 requires_python = ">=3.9"
 summary = "HTTP library with thread-safe connection pooling, file post, and more."
-groups = ["test"]
+groups = ["dev", "test"]
 files = [
     {file = "urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc"},
     {file = "urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760"},
