@@ -3,8 +3,8 @@ from typing_extensions import override
 from typing import TYPE_CHECKING, Literal, TypeVar, Optional
 
 from nonebot.utils import escape_tag
-from nonebot.internal.adapter import Event as BaseEvent
 from nonebot.matcher import current_bot
+from nonebot.internal.adapter import Event as BaseEvent
 from nonebot.compat import model_dump, model_validator, type_validate_python
 
 from .model import ModelBase

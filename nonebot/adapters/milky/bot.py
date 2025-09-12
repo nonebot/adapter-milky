@@ -3,7 +3,7 @@ from io import BytesIO
 from pathlib import Path
 from collections.abc import Sequence
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Optional, Literal
+from typing import TYPE_CHECKING, Any, Union, Literal, Optional
 
 from nonebot.message import handle_event
 from nonebot.compat import type_validate_python
@@ -701,7 +701,7 @@ class Bot(BaseBot):
         notification_seq: int,
         notification_type: Literal["join_request", "invited_join_request"],
         group_id: int,
-        is_filtered: bool = False
+        is_filtered: bool = False,
     ) -> None:
         """同意群请求
 
@@ -721,7 +721,7 @@ class Bot(BaseBot):
         notification_type: Literal["join_request", "invited_join_request"],
         group_id: int,
         is_filtered: bool = False,
-        reason: Optional[str] = None
+        reason: Optional[str] = None,
     ) -> None:
         """拒绝群请求
 
