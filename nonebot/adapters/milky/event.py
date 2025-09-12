@@ -4,11 +4,15 @@ from typing import TYPE_CHECKING, Literal, TypeVar, Optional
 
 from nonebot.utils import escape_tag
 from nonebot.internal.adapter import Event as BaseEvent
+from nonebot.matcher import current_bot
 from nonebot.compat import model_dump, model_validator, type_validate_python
 
 from .model import ModelBase
 from .model.message import IncomingMessage
 from .message import Reply, Message, MessageSegment
+
+if TYPE_CHECKING:
+    from .bot import Bot
 
 
 class Event(BaseEvent, ModelBase):
@@ -197,6 +201,9 @@ class MessageRecallData(ModelBase):
     operator_id: int
     """操作人 QQ号"""
 
+    display_suffix: str
+    """撤回提示的后缀文本"""
+
 
 @register_event_class
 class MessageRecallEvent(NoticeEvent):
@@ -237,6 +244,15 @@ class FriendNudgeData(ModelBase):
 
     is_self_receive: bool
     """是否是自己接收的头像双击"""
+
+    display_action: str
+    """头像双击的动作描述"""
+
+    display_suffix: str
+    """头像双击的后缀描述"""
+
+    display_action_img_url: str
+    """头像双击的动作图片 URL，用于取代动作提示文本"""
 
 
 @register_event_class
@@ -577,6 +593,15 @@ class GroupNudgeData(ModelBase):
     receiver_id: int
     """接收者 QQ号"""
 
+    display_action: str
+    """头像双击的动作描述"""
+
+    display_suffix: str
+    """头像双击的后缀描述"""
+
+    display_action_img_url: str
+    """头像双击的动作图片 URL，用于取代动作提示文本"""
+
 
 @register_event_class
 class GroupNudgeEvent(NoticeEvent):
@@ -637,6 +662,14 @@ class RequestEvent(Event):
     def get_type(self) -> str:
         return "request"
 
+    async def accept(self) -> None:
+        """接受请求"""
+        raise NotImplementedError
+
+    async def reject(self, reason: Optional[str] = None) -> None:
+        """拒绝请求"""
+        raise NotImplementedError
+
 
 class FriendRequestData(ModelBase):
     """好友请求数据"""
@@ -678,6 +711,16 @@ class FriendRequestEvent(RequestEvent):
     def is_private(self) -> bool:
         return True
 
+    @override
+    async def accept(self) -> None:
+        bot: "Bot" = current_bot.get()  # type: ignore
+        await bot.accept_friend_request(initiator_uid=self.data.initiator_uid)
+
+    @override
+    async def reject(self, reason: Optional[str] = None) -> None:
+        bot: "Bot" = current_bot.get()  # type: ignore
+        await bot.reject_friend_request(initiator_uid=self.data.initiator_uid, reason=reason)
+
 
 class GroupJoinRequestData(ModelBase):
     """入群申请数据"""
@@ -714,6 +757,25 @@ class GroupJoinRequestEvent(RequestEvent):
     def get_session_id(self) -> str:
         return f"{self.data.group_id}_{self.data.initiator_id}"
 
+    @override
+    async def accept(self) -> None:
+        bot: "Bot" = current_bot.get()  # type: ignore
+        await bot.accept_group_request(
+            notification_seq=self.data.notification_seq,
+            notification_type="join_request",
+            group_id=self.data.group_id,
+        )
+
+    @override
+    async def reject(self, reason: Optional[str] = None) -> None:
+        bot: "Bot" = current_bot.get()  # type: ignore
+        await bot.reject_group_request(
+            notification_seq=self.data.notification_seq,
+            notification_type="join_request",
+            group_id=self.data.group_id,
+            reason=reason,
+        )
+
 
 class GroupInvitedJoinRequestData(ModelBase):
     """群成员邀请他人入群请求数据"""
@@ -747,6 +809,25 @@ class GroupInvitedJoinRequestEvent(RequestEvent):
     def get_session_id(self) -> str:
         return f"{self.data.group_id}_{self.data.initiator_id}"
 
+    @override
+    async def accept(self) -> None:
+        bot: "Bot" = current_bot.get()  # type: ignore
+        await bot.accept_group_request(
+            notification_seq=self.data.notification_seq,
+            notification_type="invited_join_request",
+            group_id=self.data.group_id,
+        )
+
+    @override
+    async def reject(self, reason: Optional[str] = None) -> None:
+        bot: "Bot" = current_bot.get()  # type: ignore
+        await bot.reject_group_request(
+            notification_seq=self.data.notification_seq,
+            notification_type="invited_join_request",
+            group_id=self.data.group_id,
+            reason=reason,
+        )
+
 
 class GroupInvitationData(ModelBase):
     """邀请机器人(自己)入群请求数据"""
@@ -776,6 +857,16 @@ class GroupInvitationEvent(RequestEvent):
     @override
     def get_session_id(self) -> str:
         return f"{self.data.group_id}_{self.data.initiator_id}"
+
+    @override
+    async def accept(self) -> None:
+        bot: "Bot" = current_bot.get()  # type: ignore
+        await bot.accept_group_invitation(group_id=self.data.group_id, invitation_seq=self.data.invitation_seq)
+
+    @override
+    async def reject(self, reason: Optional[str] = None) -> None:
+        bot: "Bot" = current_bot.get()  # type: ignore
+        await bot.reject_group_invitation(group_id=self.data.group_id, invitation_seq=self.data.invitation_seq)
 
 
 class MetaEvent(Event):

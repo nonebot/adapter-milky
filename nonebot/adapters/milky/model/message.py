@@ -41,6 +41,10 @@ class IncomingMessage(ModelBase):
         return MessageSegment.reply(self.message_seq)
 
     @property
+    def scene(self) -> Union[Group, Friend]:
+        return self.group or self.friend  # type: ignore
+
+    @property
     def sender(self) -> Union[Friend, Member]:
         return self.friend or self.group_member  # type: ignore
 

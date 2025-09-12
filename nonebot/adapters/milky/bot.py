@@ -3,7 +3,7 @@ from io import BytesIO
 from pathlib import Path
 from collections.abc import Sequence
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Optional
+from typing import TYPE_CHECKING, Any, Union, Optional, Literal
 
 from nonebot.message import handle_event
 from nonebot.compat import type_validate_python
@@ -695,23 +695,40 @@ class Bot(BaseBot):
         return type_validate_python(list[GroupNotification], result["notifications"]), result["next_notification_seq"]
 
     @api
-    async def accept_group_request(self, *, notification_seq: int, is_filtered: bool = False) -> None:
+    async def accept_group_request(
+        self,
+        *,
+        notification_seq: int,
+        notification_type: Literal["join_request", "invited_join_request"],
+        group_id: int,
+        is_filtered: bool = False
+    ) -> None:
         """同意群请求
 
         Args:
             notification_seq: 请求对应的通知序列号
+            notification_type: 请求对应的通知类型, 可选值为 "join_request" 或 "invited_join_request"
+            group_id: 请求所在的群号
             is_filtered: 是否是被过滤的请求
         """
         await self._call("accept_group_request", locals())
 
     @api
     async def reject_group_request(
-        self, *, notification_seq: int, is_filtered: bool = False, reason: Optional[str] = None
+        self,
+        *,
+        notification_seq: int,
+        notification_type: Literal["join_request", "invited_join_request"],
+        group_id: int,
+        is_filtered: bool = False,
+        reason: Optional[str] = None
     ) -> None:
         """拒绝群请求
 
         Args:
             notification_seq: 请求对应的通知序列号
+            notification_type: 请求对应的通知类型, 可选值为 "join_request" 或 "invited_join_request"
+            group_id: 请求所在的群号
             is_filtered: 是否是被过滤的请求
             reason: 拒绝理由
         """
