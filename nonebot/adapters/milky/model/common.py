@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from .base import ModelBase
 
@@ -118,5 +118,5 @@ class Member(ModelBase):
     last_sent_time: int
     """成员最后发言时间"""
 
-    shut_up_end_time: Optional[int] = None
+    shut_up_end_time: int | None = None
     """成员禁言结束时间"""

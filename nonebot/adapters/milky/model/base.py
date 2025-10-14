@@ -1,7 +1,7 @@
 """Milky 数据模型."""
 
+from typing import Any
 from datetime import datetime
-from typing import Any, Optional
 
 from pydantic import BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump
@@ -17,8 +17,8 @@ class ModelBase(BaseModel):
     def dict_(
         self,
         *,
-        include: Optional[set[str]] = None,
-        exclude: Optional[set[str]] = None,
+        include: set[str] | None = None,
+        exclude: set[str] | None = None,
         by_alias: bool = False,
         exclude_unset: bool = False,
         exclude_defaults: bool = False,

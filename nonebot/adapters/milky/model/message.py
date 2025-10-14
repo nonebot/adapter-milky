@@ -1,4 +1,4 @@
-from typing import Union, Literal, Optional
+from typing import Literal
 
 from .base import ModelBase
 from .common import Group, Friend, Member
@@ -25,11 +25,11 @@ class IncomingMessage(ModelBase):
     segments: list[dict]
     """消息段列表"""
 
-    friend: Optional[Friend] = None
+    friend: Friend | None = None
 
-    group: Optional[Group] = None
+    group: Group | None = None
 
-    group_member: Optional[Member] = None
+    group_member: Member | None = None
 
     @property
     def message(self) -> Message:
@@ -41,11 +41,11 @@ class IncomingMessage(ModelBase):
         return MessageSegment.reply(self.message_seq)
 
     @property
-    def scene(self) -> Union[Group, Friend]:
+    def scene(self) -> Group | Friend:
         return self.group or self.friend  # type: ignore
 
     @property
-    def sender(self) -> Union[Friend, Member]:
+    def sender(self) -> Friend | Member:
         return self.friend or self.group_member  # type: ignore
 
 

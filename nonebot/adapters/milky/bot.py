@@ -3,7 +3,7 @@ from io import BytesIO
 from pathlib import Path
 from collections.abc import Sequence
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Literal, Optional
+from typing import TYPE_CHECKING, Any, Union, Literal
 
 from nonebot.message import handle_event
 from nonebot.compat import type_validate_python
@@ -160,7 +160,7 @@ class Bot(BaseBot):
         # Bot 配置信息
         self.info: ClientInfo = info
 
-    async def _call(self, action: str, data: Optional[dict] = None) -> dict:
+    async def _call(self, action: str, data: dict | None = None) -> dict:
         return await self.adapter.call_http(self.info, action, data)
 
     def __getattr__(self, item):
@@ -212,7 +212,7 @@ class Bot(BaseBot):
         self,
         *,
         user_id: int,
-        message: Union[str, MessageSegment, Sequence[MessageSegment]],
+        message: str | MessageSegment | Sequence[MessageSegment],
     ):
         """发送私聊消息
 
@@ -239,7 +239,7 @@ class Bot(BaseBot):
         self,
         *,
         group_id: int,
-        message: Union[str, MessageSegment, Sequence[MessageSegment]],
+        message: str | MessageSegment | Sequence[MessageSegment],
     ):
         """发送群消息
 
@@ -282,7 +282,7 @@ class Bot(BaseBot):
         *,
         message_scene: str,
         peer_id: int,
-        start_message_seq: Optional[int] = None,
+        start_message_seq: int | None = None,
         limit: int = 20,
     ) -> tuple[list[IncomingMessage], int]:
         """获取历史消息列表
@@ -464,7 +464,7 @@ class Bot(BaseBot):
 
     @api
     async def reject_friend_request(
-        self, *, initiator_uid: str, is_filtered: bool = False, reason: Optional[str] = None
+        self, *, initiator_uid: str, is_filtered: bool = False, reason: str | None = None
     ) -> None:
         """拒绝好友请求
 
@@ -487,10 +487,10 @@ class Bot(BaseBot):
         self,
         *,
         group_id: int,
-        url: Optional[str] = None,
-        path: Optional[Union[Path, str]] = None,
-        base64: Optional[str] = None,
-        raw: Union[None, bytes, BytesIO] = None,
+        url: str | None = None,
+        path: Path | str | None = None,
+        base64: str | None = None,
+        raw: None | bytes | BytesIO = None,
     ) -> None:
         """设置群头像
 
@@ -587,10 +587,10 @@ class Bot(BaseBot):
         *,
         group_id: int,
         content: str,
-        url: Optional[str] = None,
-        path: Optional[Union[Path, str]] = None,
-        base64: Optional[str] = None,
-        raw: Union[None, bytes, BytesIO] = None,
+        url: str | None = None,
+        path: Path | str | None = None,
+        base64: str | None = None,
+        raw: None | bytes | BytesIO = None,
     ):
         """发送群公告
 
@@ -680,7 +680,7 @@ class Bot(BaseBot):
 
     @api
     async def get_group_notifications(
-        self, *, start_notification_seq: Optional[int] = None, is_filtered: bool = False, limit: int = 20
+        self, *, start_notification_seq: int | None = None, is_filtered: bool = False, limit: int = 20
     ) -> tuple[list[GroupNotification], int]:
         """获取群通知
 
@@ -721,7 +721,7 @@ class Bot(BaseBot):
         notification_type: Literal["join_request", "invited_join_request"],
         group_id: int,
         is_filtered: bool = False,
-        reason: Optional[str] = None,
+        reason: str | None = None,
     ) -> None:
         """拒绝群请求
 
@@ -761,11 +761,11 @@ class Bot(BaseBot):
         self,
         *,
         user_id: int,
-        url: Optional[str] = None,
-        path: Optional[Union[Path, str]] = None,
-        base64: Optional[str] = None,
-        raw: Union[None, bytes, BytesIO] = None,
-        file_name: Optional[str] = None,
+        url: str | None = None,
+        path: Path | str | None = None,
+        base64: str | None = None,
+        raw: None | bytes | BytesIO = None,
+        file_name: str | None = None,
     ) -> str:
         """上传私聊文件
 
@@ -794,12 +794,12 @@ class Bot(BaseBot):
         self,
         *,
         group_id: int,
-        url: Optional[str] = None,
-        path: Optional[Union[Path, str]] = None,
-        base64: Optional[str] = None,
-        raw: Union[None, bytes, BytesIO] = None,
-        file_name: Optional[str] = None,
-        parent_folder_id: Optional[str] = None,
+        url: str | None = None,
+        path: Path | str | None = None,
+        base64: str | None = None,
+        raw: None | bytes | BytesIO = None,
+        file_name: str | None = None,
+        parent_folder_id: str | None = None,
     ) -> str:
         """上传群文件
 
@@ -855,7 +855,7 @@ class Bot(BaseBot):
         return result["download_url"]
 
     @api
-    async def get_group_files(self, *, group_id: int, parent_folder_id: Optional[str] = None) -> FilesInfo:
+    async def get_group_files(self, *, group_id: int, parent_folder_id: str | None = None) -> FilesInfo:
         """获取群文件列表
 
         Args:

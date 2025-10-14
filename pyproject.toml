@@ -8,7 +8,7 @@ authors = [
 dependencies = [
     "nonebot2>=2.4.2",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
 
@@ -29,7 +29,7 @@ format = {composite = ["black .", "isort .", "ruff check ."]}
 
 [tool.black]
 line-length = 120
-target-version = ["py39", "py310", "py311", "py312"]
+target-version = ["py310", "py311", "py312", "py313", "py314"]
 include = '\.pyi?$'
 extend-exclude = '''
 '''
@@ -45,15 +45,15 @@ extra_standard_library = ["typing_extensions"]
 [tool.ruff]
 
 line-length = 120
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "UP", "C", "T", "Q"]
-ignore = ["E402", "F403", "F405", "C901", "UP037", "W291", "T201"]
+ignore = ["E402", "F403", "F405", "C901", "UP007", "UP037", "W291", "T201"]
 
 [tool.pyright]
 pythonPlatform = "All"
-pythonVersion = "3.9"
+pythonVersion = "3.10"
 typeCheckingMode = "basic"
 reportShadowedImports = false
 disableBytesTypePromotions = true
@@ -73,8 +73,8 @@ test = [
 ]
 dev = [
     "isort==5.13.2",
-    "black>=24.8.0",
-    "ruff>=0.6.5",
+    "black>=25.9.0",
+    "ruff>=0.14.0",
     "nonebot2[httpx,websockets]>=2.4.2",
     "nonebug>=0.4.3",
 ]

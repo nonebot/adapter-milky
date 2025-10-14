@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Union, Literal, Optional
+from typing import Union, Literal
 
 from ..message import Reply
 from .base import ModelBase
@@ -80,7 +80,7 @@ class Announcement(ModelBase):
     content: str
     """公告内容"""
 
-    image_url: Optional[str] = None
+    image_url: str | None = None
     """公告图片 URL"""
 
 
@@ -105,7 +105,7 @@ class FileInfo(ModelBase):
     uploaded_time: int
     """上传时间"""
 
-    expire_time: Optional[int] = None
+    expire_time: int | None = None
     """过期时间"""
 
     uploader_id: int
@@ -234,7 +234,7 @@ class GroupJoinRequestNotification(ModelBase):
     state: Literal["pending", "accepted", "rejected", "ignored"]
     """请求状态"""
 
-    operator_id: Optional[int] = None
+    operator_id: int | None = None
     """处理请求的管理员 QQ 号"""
 
     comment: str
@@ -311,7 +311,7 @@ class GroupInvitedJoinRequestNotification(ModelBase):
     state: Literal["pending", "accepted", "rejected", "ignored"]
     """请求状态"""
 
-    operator_id: Optional[int] = None
+    operator_id: int | None = None
     """处理请求的管理员 QQ 号"""
 
 

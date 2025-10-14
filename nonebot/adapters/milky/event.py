@@ -1,6 +1,6 @@
 from copy import deepcopy
 from typing_extensions import override
-from typing import TYPE_CHECKING, Literal, TypeVar, Optional
+from typing import TYPE_CHECKING, Literal, TypeVar
 
 from nonebot.utils import escape_tag
 from nonebot.matcher import current_bot
@@ -85,7 +85,7 @@ class MessageEvent(Event):
 
     data: IncomingMessage
 
-    reply: Optional[IncomingMessage] = None
+    reply: IncomingMessage | None = None
     """可能的引用消息对象"""
 
     to_me: bool = False
@@ -388,10 +388,10 @@ class GroupMemberIncreaseData(ModelBase):
     user_id: int
     """增加成员的 QQ 号"""
 
-    operator_id: Optional[int] = None
+    operator_id: int | None = None
     """操作人 QQ号 （管理员 QQ 号，如果是管理员同意入群）"""
 
-    invitor_id: Optional[int] = None
+    invitor_id: int | None = None
     """邀请人 QQ号 （邀请人 QQ 号，如果是被邀请入群）"""
 
 
@@ -421,7 +421,7 @@ class GroupMemberDecreaseData(ModelBase):
     user_id: int
     """减少成员的 QQ 号"""
 
-    operator_id: Optional[int] = None
+    operator_id: int | None = None
     """操作人 QQ号 （管理员 QQ 号，如果是管理员踢人）"""
 
 
@@ -666,7 +666,7 @@ class RequestEvent(Event):
         """接受请求"""
         raise NotImplementedError
 
-    async def reject(self, reason: Optional[str] = None) -> None:
+    async def reject(self, reason: str | None = None) -> None:
         """拒绝请求"""
         raise NotImplementedError
 
@@ -717,7 +717,7 @@ class FriendRequestEvent(RequestEvent):
         await bot.accept_friend_request(initiator_uid=self.data.initiator_uid)
 
     @override
-    async def reject(self, reason: Optional[str] = None) -> None:
+    async def reject(self, reason: str | None = None) -> None:
         bot: "Bot" = current_bot.get()  # type: ignore
         await bot.reject_friend_request(initiator_uid=self.data.initiator_uid, reason=reason)
 
@@ -767,7 +767,7 @@ class GroupJoinRequestEvent(RequestEvent):
         )
 
     @override
-    async def reject(self, reason: Optional[str] = None) -> None:
+    async def reject(self, reason: str | None = None) -> None:
         bot: "Bot" = current_bot.get()  # type: ignore
         await bot.reject_group_request(
             notification_seq=self.data.notification_seq,
@@ -819,7 +819,7 @@ class GroupInvitedJoinRequestEvent(RequestEvent):
         )
 
     @override
-    async def reject(self, reason: Optional[str] = None) -> None:
+    async def reject(self, reason: str | None = None) -> None:
         bot: "Bot" = current_bot.get()  # type: ignore
         await bot.reject_group_request(
             notification_seq=self.data.notification_seq,
@@ -864,7 +864,7 @@ class GroupInvitationEvent(RequestEvent):
         await bot.accept_group_invitation(group_id=self.data.group_id, invitation_seq=self.data.invitation_seq)
 
     @override
-    async def reject(self, reason: Optional[str] = None) -> None:
+    async def reject(self, reason: str | None = None) -> None:
         bot: "Bot" = current_bot.get()  # type: ignore
         await bot.reject_group_invitation(group_id=self.data.group_id, invitation_seq=self.data.invitation_seq)
 

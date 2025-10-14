@@ -1,5 +1,3 @@
-from typing import Optional
-
 from nonebot.exception import AdapterException
 from nonebot.exception import ActionFailed as BaseActionFailed
 from nonebot.exception import NetworkError as BaseNetworkError
@@ -19,9 +17,9 @@ class NoLogException(BaseNoLogException, MilkyAdapterException):
 class NetworkError(BaseNetworkError, MilkyAdapterException):
     """网络错误。"""
 
-    def __init__(self, msg: Optional[str] = None):
+    def __init__(self, msg: str | None = None):
         super().__init__()
-        self.msg: Optional[str] = msg
+        self.msg: str | None = msg
         """错误原因"""
 
     def __repr__(self):
@@ -41,9 +39,9 @@ class UnsupportedContentType(NetworkError):
 
 
 class ApiNotAvailable(BaseApiNotAvailable, MilkyAdapterException):
-    def __init__(self, msg: Optional[str] = None):
+    def __init__(self, msg: str | None = None):
         super().__init__()
-        self.msg: Optional[str] = msg
+        self.msg: str | None = msg
         """错误原因"""
 
 

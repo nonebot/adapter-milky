@@ -1,5 +1,3 @@
-from typing import Optional
-
 from yarl import URL
 from pydantic import Field, BaseModel
 
@@ -9,7 +7,7 @@ class ClientInfo(BaseModel):
     """Milky 协议端地址"""
     port: int = 8080
     """Milky 协议端端口"""
-    access_token: Optional[str] = None
+    access_token: str | None = None
     """Milky 协议端 验证密钥"""
 
     def get_url(self, route: str) -> str:
@@ -24,5 +22,5 @@ class ClientInfo(BaseModel):
 class Config(BaseModel):
     milky_clients: list[ClientInfo] = Field(default_factory=list)
     """Milky 客户端配置"""
-    milky_webhook: Optional[ClientInfo] = None
+    milky_webhook: ClientInfo | None = None
     """Milky Webhook 配置"""

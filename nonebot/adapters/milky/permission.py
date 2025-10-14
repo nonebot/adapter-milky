@@ -1,14 +1,12 @@
 """Milky 权限辅助。"""
 
-from typing import Union
-
 from nonebot.permission import Permission
 
 from .bot import Bot
-from .event import GroupMessageEvent, FriendMessageEvent, TempMessageEvent
+from .event import TempMessageEvent, GroupMessageEvent, FriendMessageEvent
 
 
-async def _private(event: Union[FriendMessageEvent, TempMessageEvent]) -> bool:
+async def _private(event: FriendMessageEvent | TempMessageEvent) -> bool:
     return True
 
 

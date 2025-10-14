@@ -1,6 +1,6 @@
 import json
 import asyncio
-from typing import Any, Optional, cast
+from typing import Any, cast
 from typing_extensions import override
 
 from nonebot.internal.driver import Response
@@ -121,7 +121,7 @@ class Adapter(BaseAdapter):
     @override
     async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:
         log("DEBUG", f"Bot {bot.self_id} calling API <y>{api}</y>")
-        api_handler: Optional[API] = getattr(bot.__class__, api, None)
+        api_handler: API | None = getattr(bot.__class__, api, None)
         if api_handler is None:
             raise ApiNotAvailable(api)
         return await api_handler(bot, **data)
@@ -130,7 +130,7 @@ class Adapter(BaseAdapter):
         self,
         info: ClientInfo,
         action: str,
-        params: Optional[dict] = None,
+        params: dict | None = None,
     ) -> dict:
         data = clean_params(params or {})
         timeout: float = data.get("_timeout", self.config.api_timeout)
@@ -162,7 +162,7 @@ class Adapter(BaseAdapter):
         ws_url = client.ws_url()
         request = Request("GET", ws_url, headers=headers, timeout=30.0)
 
-        bot: Optional[Bot] = None
+        bot: Bot | None = None
 
         while True:
             try:
@@ -222,7 +222,7 @@ class Adapter(BaseAdapter):
                 await asyncio.sleep(RECONNECT_INTERVAL)
 
     @classmethod
-    def json_to_event(cls, json_data: Any) -> Optional[Event]:
+    def json_to_event(cls, json_data: Any) -> Event | None:
         """将 json 数据转换为 Event 对象。
 
         如果为 API 调用返回数据且提供了 Event 对应 Bot，则将数据存入 ResultStore。

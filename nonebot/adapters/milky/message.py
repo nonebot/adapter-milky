@@ -3,7 +3,7 @@ from pathlib import Path
 from collections.abc import Iterable
 from dataclasses import field, asdict, dataclass
 from typing_extensions import NotRequired, override
-from typing import TYPE_CHECKING, Any, Union, Literal, ClassVar, Optional, TypedDict
+from typing import TYPE_CHECKING, Any, Literal, ClassVar, TypedDict
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
@@ -71,12 +71,12 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def image(
-        url: Optional[str] = None,
+        url: str | None = None,
         *,
-        path: Optional[Union[Path, str]] = None,
-        base64: Optional[str] = None,
-        raw: Union[None, bytes, BytesIO] = None,
-        summary: Optional[str] = None,
+        path: Path | str | None = None,
+        base64: str | None = None,
+        raw: None | bytes | BytesIO = None,
+        summary: str | None = None,
         sub_type: Literal["normal", "sticker"] = "normal",
     ):
         """图片消息段"""
@@ -85,11 +85,11 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def record(
-        url: Optional[str] = None,
+        url: str | None = None,
         *,
-        path: Optional[Union[Path, str]] = None,
-        base64: Optional[str] = None,
-        raw: Union[None, bytes, BytesIO] = None,
+        path: Path | str | None = None,
+        base64: str | None = None,
+        raw: None | bytes | BytesIO = None,
     ):
         """语音消息段"""
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
@@ -97,15 +97,15 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def video(
-        url: Optional[str] = None,
+        url: str | None = None,
         *,
-        path: Optional[Union[Path, str]] = None,
-        base64: Optional[str] = None,
-        raw: Union[None, bytes, BytesIO] = None,
-        thumb_url: Optional[str] = None,
-        thumb_path: Optional[Union[Path, str]] = None,
-        thumb_base64: Optional[str] = None,
-        thumb_raw: Union[None, bytes, BytesIO] = None,
+        path: Path | str | None = None,
+        base64: str | None = None,
+        raw: None | bytes | BytesIO = None,
+        thumb_url: str | None = None,
+        thumb_path: Path | str | None = None,
+        thumb_base64: str | None = None,
+        thumb_raw: None | bytes | BytesIO = None,
     ):
         """视频消息段"""
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
@@ -183,13 +183,13 @@ class IncomingImageData(TypedDict):
 
 class OutgoingImageData(TypedDict):
     uri: str
-    summary: Optional[str]
+    summary: str | None
     sub_type: Literal["normal", "sticker"]
 
 
 @dataclass
 class Image(MessageSegment):
-    data: Union[IncomingImageData, OutgoingImageData] = field(default_factory=dict)  # type: ignore
+    data: IncomingImageData | OutgoingImageData = field(default_factory=dict)  # type: ignore
 
 
 class IncomingRecordData(TypedDict):
@@ -204,7 +204,7 @@ class OutgoingRecordData(TypedDict):
 
 @dataclass
 class Record(MessageSegment):
-    data: Union[IncomingRecordData, OutgoingRecordData] = field(default_factory=dict)  # type: ignore
+    data: IncomingRecordData | OutgoingRecordData = field(default_factory=dict)  # type: ignore
 
 
 class IncomingVideoData(TypedDict):
@@ -217,19 +217,19 @@ class IncomingVideoData(TypedDict):
 
 class OutgoingVideoData(TypedDict):
     uri: str
-    thumb_uri: Optional[str]
+    thumb_uri: str | None
 
 
 @dataclass
 class Video(MessageSegment):
-    data: Union[IncomingVideoData, OutgoingVideoData] = field(default_factory=dict)  # type: ignore
+    data: IncomingVideoData | OutgoingVideoData = field(default_factory=dict)  # type: ignore
 
 
 class IncomingFileData(TypedDict):
     file_id: str
     file_name: str
     file_size: int
-    file_hash: Optional[str]
+    file_hash: str | None
 
 
 @dataclass
@@ -254,7 +254,7 @@ class OutgoingForwardData(TypedDict):
 
 @dataclass
 class Forward(MessageSegment):
-    data: Union[IncomingForwardData, OutgoingForwardData] = field(default_factory=dict)  # type: ignore
+    data: IncomingForwardData | OutgoingForwardData = field(default_factory=dict)  # type: ignore
 
     @classmethod
     def parse(cls, data: dict[str, Any]) -> "Forward":

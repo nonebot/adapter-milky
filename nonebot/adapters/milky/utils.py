@@ -2,9 +2,9 @@ from io import BytesIO
 from pathlib import Path
 from base64 import b64encode
 from functools import partial
-from collections.abc import Awaitable
-from typing_extensions import ParamSpec, Concatenate
-from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar, Callable, Optional, overload
+from typing_extensions import ParamSpec
+from collections.abc import Callable, Awaitable
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, Concatenate, overload
 
 from nonebot.utils import logger_wrapper
 
@@ -31,11 +31,9 @@ class API(Generic[B, P, R]):
     def __get__(self, obj: None, objtype: type[B]) -> "API[B, P, R]": ...
 
     @overload
-    def __get__(self, obj: B, objtype: Optional[type[B]]) -> Callable[P, Awaitable[R]]: ...
+    def __get__(self, obj: B, objtype: type[B] | None) -> Callable[P, Awaitable[R]]: ...
 
-    def __get__(
-        self, obj: Optional[B], objtype: Optional[type[B]] = None
-    ) -> "API[B, P, R] | Callable[P, Awaitable[R]]":
+    def __get__(self, obj: B | None, objtype: type[B] | None = None) -> "API[B, P, R] | Callable[P, Awaitable[R]]":
         if obj is None:
             return self
 
@@ -60,7 +58,7 @@ def api(func: TCallable) -> TCallable:
 log = logger_wrapper("Milky")
 
 
-def handle_api_result(result: Optional[dict[str, Any]]) -> Any:
+def handle_api_result(result: dict[str, Any] | None) -> Any:
     """处理 API 请求返回值。
 
     参数:
@@ -80,7 +78,7 @@ def handle_api_result(result: Optional[dict[str, Any]]) -> Any:
         return result.get("data")
 
 
-def raise_api_response(status: int, message: Optional[str] = None) -> None:
+def raise_api_response(status: int, message: str | None = None) -> None:
     if status == 200:
         return
     if status == 401:
@@ -97,10 +95,10 @@ def clean_params(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def to_uri(
-    url: Optional[str] = None,
-    path: Optional[Union[Path, str]] = None,
-    base64: Optional[str] = None,
-    raw: Union[None, bytes, BytesIO] = None,
+    url: str | None = None,
+    path: Path | str | None = None,
+    base64: str | None = None,
+    raw: None | bytes | BytesIO = None,
 ):
     if sum([bool(url), bool(path), bool(base64), bool(raw)]) > 1:
         raise ValueError("Too many binary initializers!")
