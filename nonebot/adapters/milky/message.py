@@ -371,7 +371,12 @@ class Message(BaseMessage[MessageSegment]):
                 new.append(
                     MessageSegment.forward(
                         # TODO: 拿 user_id
-                        [MessageSegment.node(int(bot.self_id), msg.sender_name, await msg.message.sendable(bot, refresh_resources)) for msg in messages]
+                        [
+                            MessageSegment.node(
+                                int(bot.self_id), msg.sender_name, await msg.message.sendable(bot, refresh_resources)
+                            )
+                            for msg in messages
+                        ]
                     )
                 )
             elif isinstance(seg, (File, MarketFace, LightAPP, XML)):
