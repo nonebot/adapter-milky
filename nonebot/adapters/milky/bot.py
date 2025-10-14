@@ -285,7 +285,7 @@ class Bot(BaseBot):
         start_message_seq: Optional[int] = None,
         limit: int = 20,
     ) -> tuple[list[IncomingMessage], int]:
-        """获取历史消息
+        """获取历史消息列表
 
         Args:
             message_scene: 消息场景
@@ -572,13 +572,13 @@ class Bot(BaseBot):
         await self._call("kick_group_member", locals())
 
     @api
-    async def get_group_announcement_list(self, *, group_id: int) -> list[Announcement]:
+    async def get_group_announcements(self, *, group_id: int) -> list[Announcement]:
         """获取群公告列表
 
         Args:
             group_id: 群号
         """
-        result = await self._call("get_group_announcement_list", {"group_id": group_id})
+        result = await self._call("get_group_announcements", {"group_id": group_id})
         return type_validate_python(list[Announcement], result["announcements"])
 
     @api

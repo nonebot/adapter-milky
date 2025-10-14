@@ -225,6 +225,18 @@ class Video(MessageSegment):
     data: Union[IncomingVideoData, OutgoingVideoData] = field(default_factory=dict)  # type: ignore
 
 
+class IncomingFileData(TypedDict):
+    file_id: str
+    file_name: str
+    file_size: int
+    file_hash: Optional[str]
+
+
+@dataclass
+class File(MessageSegment):
+    data: IncomingFileData = field(default_factory=dict)  # type: ignore
+
+
 class IncomingForwardData(TypedDict):
     forward_id: str
 
@@ -359,10 +371,10 @@ class Message(BaseMessage[MessageSegment]):
                 new.append(
                     MessageSegment.forward(
                         # TODO: 拿 user_id
-                        [MessageSegment.node(int(bot.self_id), msg.sender_name, msg.message) for msg in messages]
+                        [MessageSegment.node(int(bot.self_id), msg.sender_name, await msg.message.sendable(bot, refresh_resources)) for msg in messages]
                     )
                 )
-            elif isinstance(seg, (MarketFace, LightAPP, XML)):
+            elif isinstance(seg, (File, MarketFace, LightAPP, XML)):
                 continue
             else:
                 new.append(seg)

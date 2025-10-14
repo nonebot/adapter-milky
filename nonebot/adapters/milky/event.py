@@ -293,7 +293,7 @@ class FriendFileUploadData(ModelBase):
     """文件名"""
 
     file_size: int
-    """文件大小"""
+    """文件大小（字节）"""
 
     file_hash: str
     """文件的 TriSHA1 哈希值"""
@@ -636,7 +636,7 @@ class GroupFileUploadData(ModelBase):
     """文件名"""
 
     file_size: int
-    """文件大小"""
+    """文件大小（字节）"""
 
 
 @register_event_class
