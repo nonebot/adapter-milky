@@ -336,6 +336,9 @@ class GroupAdminChangeData(ModelBase):
     user_id: int
     """发生变更的 QQ 号"""
 
+    operator_id: int
+    """操作人 QQ号"""
+
     is_set: bool
     """是否被设置为管理员, True 为设置, False 为取消"""
 
@@ -365,6 +368,9 @@ class GroupEssenceMessageChangeData(ModelBase):
 
     message_seq: int
     """发生变更的消息序列号"""
+
+    operator_id: int
+    """操作人 QQ号"""
 
     is_set: bool
     """是否被设置为精华, True 为设置, False 为取消"""

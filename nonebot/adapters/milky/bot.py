@@ -418,6 +418,44 @@ class Bot(BaseBot):
         return type_validate_python(Member, result["member"])
 
     @api
+    async def set_avatar(
+        self,
+        *,
+        url: str | None = None,
+        path: Path | str | None = None,
+        base64: str | None = None,
+        raw: None | bytes | BytesIO = None,
+    ) -> None:
+        """设置用户头像
+
+        image_uri: 图像文件 URI，支持 file:// http(s):// base64:// 三种格式
+
+        Args:
+            url: 图像 URL
+            path: 图像文件路径
+            base64: 图像文件 base64 编码
+            raw: 图像文件二进制数据
+        """
+        uri = to_uri(url=url, path=path, base64=base64, raw=raw)
+        await self._call("set_avatar", {"uri": uri})
+
+    @api
+    async def set_nickname(self, *, new_nickname: str) -> None:
+        """设置用户昵称"""
+        await self._call("set_nickname", {"new_nickname": new_nickname})
+
+    @api
+    async def set_bio(self, *, new_bio: str) -> None:
+        """设置用户个性签名"""
+        await self._call("set_bio", {"new_bio": new_bio})
+
+    @api
+    async def get_custom_face_url_list(self) -> list[str]:
+        """获取自定义表情 URL 列表"""
+        result = await self._call("get_custom_face_url_list")
+        return result["urls"]
+
+    @api
     async def get_cookies(self, *, domain: str):
         """获取指定域名的 Cookie"""
         result = await self._call("get_cookies", {"domain": domain})
@@ -440,6 +478,11 @@ class Bot(BaseBot):
     async def send_profile_like(self, *, user_id: int, count: int = 1) -> None:
         """发送个人名片点赞动作"""
         await self._call("send_profile_like", locals())
+
+    @api
+    async def delete_friend(self, *, user_id: int) -> None:
+        """删除好友"""
+        await self._call("delete_friend", {"user_id": user_id})
 
     @api
     async def get_friend_requests(self, *, limit: int = 20, is_filtered: bool = False) -> list[FriendRequest]:
