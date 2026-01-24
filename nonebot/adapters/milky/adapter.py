@@ -79,6 +79,23 @@ class Adapter(BaseAdapter):
 
     async def _handle_http(self, request: Request) -> Response:
         assert self.milky_config.milky_webhook, "Milky webhook config is not set"
+        access_token = self.milky_config.milky_webhook.access_token
+        if access_token:
+            auth_header = None
+            if request.headers:
+                auth_header = request.headers.get("Authorization") or request.headers.get(
+                    "authorization"
+                )
+                if auth_header is None:
+                    for key, value in request.headers.items():
+                        if key.lower() == "authorization":
+                            auth_header = value
+                            break
+            if not auth_header or not auth_header.startswith("Bearer "):
+                return Response(401, content="Unauthorized")
+            token = auth_header[len("Bearer ") :].strip()
+            if token != access_token:
+                return Response(401, content="Unauthorized")
         if data := request.content:
             json_data = json.loads(data)
             if event := self.json_to_event(json_data):
