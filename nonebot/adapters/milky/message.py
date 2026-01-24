@@ -240,6 +240,9 @@ class File(MessageSegment):
 
 class IncomingForwardData(TypedDict):
     forward_id: str
+    title: str
+    preview: list[str]
+    summary: str
 
 
 @dataclass
