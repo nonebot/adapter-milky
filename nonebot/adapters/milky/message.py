@@ -60,9 +60,9 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return MentionAll("mention_all", {})
 
     @staticmethod
-    def face(face_id: str) -> "Face":
+    def face(face_id: str, is_large: bool = False) -> "Face":
         """表情消息段"""
-        return Face("face", {"face_id": face_id})
+        return Face("face", {"face_id": face_id, "is_large": is_large})
 
     @staticmethod
     def reply(message_seq: int) -> "Reply":
@@ -156,6 +156,7 @@ class MentionAll(MessageSegment, element_type="mention_all"):
 
 class FaceData(TypedDict):
     face_id: str
+    is_large: bool
 
 
 @dataclass
