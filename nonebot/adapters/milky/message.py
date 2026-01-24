@@ -294,6 +294,10 @@ class Forward(MessageSegment):
 
 class MarketFaceData(TypedDict):
     url: str
+    emoji_package_id: int
+    emoji_id: str
+    key: str
+    summary: str
 
 
 @dataclass
