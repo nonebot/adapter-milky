@@ -18,7 +18,7 @@ _✨ NoneBot2 Milky 协议适配 / Milky Protocol Adapter for NoneBot2 ✨_
 
 - [Lagrange.Milky (WIP)](https://github.com/LagrangeDev/LagrangeV2/tree/main/Lagrange.Milky)
 - [Yogurt](https://github.com/LagrangeDev/acidify/tree/main/yogurt)
-- [tanebi-milky](https://github.com/SaltifyDev/tanebi/tree/v2/packages/milky)
+- [LuckyLilliaBot](https://github.com/LLOneBot/LuckyLilliaBot)
 
 ## 配置
 
