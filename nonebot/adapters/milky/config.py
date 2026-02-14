@@ -9,12 +9,14 @@ class ClientInfo(BaseModel):
     """Milky 协议端端口"""
     access_token: str | None = None
     """Milky 协议端 验证密钥"""
+    secure: bool = False
+    """是否使用 HTTPS 和 WSS 协议"""
 
     def get_url(self, route: str) -> str:
-        return str(URL(f"http://{self.host}:{self.port}") / "api" / route)
+        return str(URL(f"http{'s' if self.secure else ''}://{self.host}:{self.port}") / "api" / route)
 
     def ws_url(self):
-        return (URL(f"ws://{self.host}:{self.port}") / "event").with_query(
+        return (URL(f"ws{'s' if self.secure else ''}://{self.host}:{self.port}") / "event").with_query(
             None if self.access_token is None else {"access_token": self.access_token}
         )
 

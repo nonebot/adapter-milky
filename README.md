@@ -64,7 +64,8 @@ MILKY_CLIENTS='
   {
     "host": "localhost",
     "port": "8080",
-    "access_token": "xxx"
+    "access_token": "xxx",
+    "secure": false
   }
 ]
 '
@@ -73,6 +74,8 @@ MILKY_CLIENTS='
 `host` 与 `port` 为 Milky 协议端设置的监听地址与端口，
 
 `access_token` 为可选项，具体情况以 Milky 协议端为准。
+
+`secure` 为可选项，表示是否使用安全连接（即 wss:// 或 https://），默认为 `false`。
 
 ### MILKY_WEBHOOK
 
@@ -83,7 +86,8 @@ MILKY_WEBHOOK='
 {
   "host": "localhost",
   "port": "8081",
-  "access_token": "xxx"
+  "access_token": "xxx",
+  "secure": false
 }
 '
 ```
@@ -91,6 +95,8 @@ MILKY_WEBHOOK='
 `host` 与 `port` 为 Milky 协议端设置的监听地址与端口，
 
 `access_token` 为可选项，具体情况以 Milky 协议端为准。
+
+`secure` 为可选项，表示是否使用安全连接（即 wss:// 或 https://），默认为 `false`。
 
 ## 示例
 
