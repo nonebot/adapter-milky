@@ -625,6 +625,10 @@ class GroupNudgeEvent(NoticeEvent):
     def get_session_id(self) -> str:
         return f"{self.data.group_id}_{self.data.sender_id}"
 
+    @override
+    def is_tome(self) -> bool:
+        return self.data.receiver_id == self.self_id
+
 
 class GroupFileUploadData(ModelBase):
     """群文件上传数据"""
