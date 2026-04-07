@@ -233,6 +233,41 @@ class MessageRecallEvent(NoticeEvent):
         return str(self.data.peer_id)
 
 
+class PeerPinChangeData(ModelBase):
+    """会话置顶变更事件"""
+
+    message_scene: Literal["friend", "group", "temp"]
+    """消息场景"""
+
+    peer_id: int
+    """好友 QQ号或群号"""
+
+    is_pinned: bool
+    """是否被置顶，True 为置顶，False 为取消置顶"""
+
+
+@register_event_class
+class PeerPinChangeEvent(NoticeEvent):
+    """会话置顶变更事件"""
+
+    __event_type__ = "peer_pin_change"
+
+    data: PeerPinChangeData
+
+    @override
+    def get_event_name(self) -> str:
+        return f"peer_pin_change:{self.data.message_scene}"
+
+    @property
+    def is_private(self) -> bool:
+        """是否为私聊消息"""
+        return self.data.message_scene == "friend"
+
+    @override
+    def get_session_id(self) -> str:
+        return str(self.data.peer_id)
+
+
 class FriendNudgeData(ModelBase):
     """好友头像双击数据"""
 
@@ -492,6 +527,9 @@ class GroupMessageReactionData(ModelBase):
 
     face_id: str
     """表情 ID"""
+
+    reaction_type: Literal["face", "emoji"]
+    """收到的回应类型"""
 
     is_add: bool
     """是否添加表情，True 为添加，False 为取消"""
@@ -849,6 +887,9 @@ class GroupInvitationData(ModelBase):
 
     initiator_id: int
     """邀请者 QQ 号"""
+
+    source_group_id: int | None = None
+    """邀请来源群号，如果是通过 QQ 群邀请"""
 
 
 @register_event_class
