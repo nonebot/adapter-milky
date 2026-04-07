@@ -17,11 +17,11 @@ from .model.api import (
     Announcement,
     FilesInfo,
     FriendRequest,
-    GroupEssenceMessage,
+    GroupEssenceMessageResponse,
     GroupNotification,
     ImplInfo,
     LoginInfo,
-    MessageResponse, GroupEssenceMessageResponse,
+    MessageResponse,
 )
 from .model.common import Friend, Group, Member, Profile
 from .model.message import IncomingForwardedMessage, IncomingMessage
@@ -262,7 +262,9 @@ class Bot(BaseBot):
         return type_validate_python(MessageResponse, result)
 
     @api
-    async def get_message(self, *, message_scene: Literal["group", "friend", "temp"], peer_id: int, message_seq: int) -> IncomingMessage:
+    async def get_message(
+        self, *, message_scene: Literal["group", "friend", "temp"], peer_id: int, message_seq: int
+    ) -> IncomingMessage:
         """获取消息
 
         Args:
@@ -345,7 +347,9 @@ class Bot(BaseBot):
         await self._call("recall_group_message", locals())
 
     @api
-    async def mark_message_as_read(self, *, message_scene: Literal["group", "friend", "temp"], peer_id: int, message_seq: int) -> None:
+    async def mark_message_as_read(
+        self, *, message_scene: Literal["group", "friend", "temp"], peer_id: int, message_seq: int
+    ) -> None:
         """标记消息为已读
 
         Args:
@@ -457,7 +461,9 @@ class Bot(BaseBot):
         }
 
     @api
-    async def set_peer_pin(self, *, message_scene: Literal["group", "friend", "temp"], peer_id: int, is_pinned: bool = True) -> None:
+    async def set_peer_pin(
+        self, *, message_scene: Literal["group", "friend", "temp"], peer_id: int, is_pinned: bool = True
+    ) -> None:
         """设置置顶好友或群
 
         Args:
@@ -569,7 +575,8 @@ class Bot(BaseBot):
 
         Args:
             limit (int): 获取的最大请求数量
-            is_filtered (bool, optional): true 表示只获取被过滤（由风险账号发起）的通知，false 表示只获取未被过滤的通知，默认值：false
+            is_filtered (bool, optional): true 表示只获取被过滤（由风险账号发起）的通知，
+                false 表示只获取未被过滤的通知，默认值：false
 
         Returns:
             list[FriendRequest]: 好友请求列表
@@ -756,7 +763,9 @@ class Bot(BaseBot):
         await self._call("delete_group_announcement", locals())
 
     @api
-    async def get_group_essence_messages(self, *, group_id: int, page_index: int, page_size: int) -> GroupEssenceMessageResponse:
+    async def get_group_essence_messages(
+        self, *, group_id: int, page_index: int, page_size: int
+    ) -> GroupEssenceMessageResponse:
         """获取群精华消息
 
         Args:
@@ -797,7 +806,7 @@ class Bot(BaseBot):
         message_seq: int,
         reaction: str,
         reaction_type: Literal["face", "emoji"] = "face",
-        is_add: bool = True
+        is_add: bool = True,
     ) -> None:
         """发送群消息表情
 
@@ -828,7 +837,8 @@ class Bot(BaseBot):
 
         Args:
             start_notification_seq (int): 起始通知序列号
-            is_filtered (bool, optional): true 表示只获取被过滤（由风险账号发起）的通知，false 表示只获取未被过滤的通知，默认值：false
+            is_filtered (bool, optional): true 表示只获取被过滤（由风险账号发起）的通知，
+                false 表示只获取未被过滤的通知，默认值：false
             limit (int, optional): 获取的最大通知数量，默认值：20
         Returns:
             (list[GroupNotification], int): 通知列表和下一页起始通知序列号

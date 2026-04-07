@@ -25,7 +25,7 @@ includes = ["nonebot"]
 
 [tool.pdm.scripts]
 test = "pytest -W ignore -s"
-format = {composite = ["black .", "isort .", "ruff check ."]}
+format = {composite = ["ruff check --select I --fix .", "black .", "ruff check ."]}
 
 [tool.black]
 line-length = 120

@@ -190,7 +190,9 @@ class MessageSegment(BaseMessageSegment["Message"]):
             summary (str, optional): 合并转发摘要文本
             prompt (str, optional): 合并转发的预览外显文本，仅对移动端 QQ 有效
         """
-        return Forward("forward", {"messages": messages, "title": title, "preview": preview, "summary": summary, "prompt": prompt})
+        return Forward(
+            "forward", {"messages": messages, "title": title, "preview": preview, "summary": summary, "prompt": prompt}
+        )
 
     @staticmethod
     def node(
@@ -404,7 +406,15 @@ class Forward(MessageSegment):
                     "prompt": data.get("prompt"),
                 },
             )
-        return cls("forward", {"forward_id": data["forward_id"], "title": data.get("title", ""), "preview": data.get("preview", []), "summary": data.get("summary", "")})
+        return cls(
+            "forward",
+            {
+                "forward_id": data["forward_id"],
+                "title": data.get("title", ""),
+                "preview": data.get("preview", []),
+                "summary": data.get("summary", ""),
+            },
+        )
 
     def dump(self):
         if "messages" not in self.data:
