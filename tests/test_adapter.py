@@ -1,14 +1,14 @@
 from datetime import datetime
 
 import pytest
-from nonebug import App
 from nonebot.compat import type_validate_python
+from nonebug import App
 
 
 @pytest.mark.asyncio()
 async def test_adapter(app: App):
     import nonebot
-    from nonebot.adapters.milky import Bot, Adapter
+    from nonebot.adapters.milky import Adapter, Bot
     from nonebot.adapters.milky.event import MessageEvent
 
     cmd = nonebot.on_command("test")

@@ -1,31 +1,31 @@
 import re
+from collections.abc import Sequence
 from io import BytesIO
 from pathlib import Path
-from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, Literal, Union
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Literal
 
-from nonebot.message import handle_event
 from nonebot.compat import type_validate_python
+from nonebot.message import handle_event
 
 from nonebot.adapters import Bot as BaseBot
 
 from .config import ClientInfo
-from .utils import api, log, to_uri
-from .message import Reply, Message, MessageSegment
-from .model.common import Group, Friend, Member, Profile
 from .event import Event, MessageEvent, MessageRecallEvent
-from .model.message import IncomingMessage, IncomingForwardedMessage
+from .message import Message, MessageSegment, Reply
 from .model.api import (
-    ImplInfo,
-    FilesInfo,
-    LoginInfo,
     Announcement,
+    FilesInfo,
     FriendRequest,
-    MessageResponse,
-    GroupNotification,
     GroupEssenceMessage,
+    GroupNotification,
+    ImplInfo,
+    LoginInfo,
+    MessageResponse,
 )
+from .model.common import Friend, Group, Member, Profile
+from .model.message import IncomingForwardedMessage, IncomingMessage
+from .utils import api, log, to_uri
 
 if TYPE_CHECKING:
     from .adapter import Adapter

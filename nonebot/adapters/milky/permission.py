@@ -3,7 +3,7 @@
 from nonebot.permission import Permission
 
 from .bot import Bot
-from .event import TempMessageEvent, GroupMessageEvent, FriendMessageEvent
+from .event import FriendMessageEvent, GroupMessageEvent, TempMessageEvent
 
 
 async def _private(event: FriendMessageEvent | TempMessageEvent) -> bool:

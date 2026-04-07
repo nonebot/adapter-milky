@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Union, Literal
+from typing import Literal, Union
 
 from ..message import Reply
 from .base import ModelBase

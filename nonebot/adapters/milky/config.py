@@ -1,5 +1,5 @@
+from pydantic import BaseModel, Field
 from yarl import URL
-from pydantic import Field, BaseModel
 
 
 class ClientInfo(BaseModel):

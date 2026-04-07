@@ -1,9 +1,9 @@
+from collections.abc import Iterable
+from dataclasses import asdict, dataclass, field
 from io import BytesIO
 from pathlib import Path
-from collections.abc import Iterable
-from dataclasses import field, asdict, dataclass
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypedDict
 from typing_extensions import NotRequired, override
-from typing import TYPE_CHECKING, Any, Literal, ClassVar, TypedDict
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment

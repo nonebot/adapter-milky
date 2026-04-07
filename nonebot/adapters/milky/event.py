@@ -1,15 +1,15 @@
 from copy import deepcopy
-from typing_extensions import override
 from typing import TYPE_CHECKING, Literal, TypeVar
+from typing_extensions import override
 
-from nonebot.utils import escape_tag
-from nonebot.matcher import current_bot
-from nonebot.internal.adapter import Event as BaseEvent
 from nonebot.compat import model_dump, model_validator, type_validate_python
+from nonebot.internal.adapter import Event as BaseEvent
+from nonebot.matcher import current_bot
+from nonebot.utils import escape_tag
 
+from .message import Message, MessageSegment, Reply
 from .model import ModelBase
 from .model.message import IncomingMessage
-from .message import Reply, Message, MessageSegment
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -667,7 +667,6 @@ class GroupFileUploadEvent(NoticeEvent):
 
 
 class RequestEvent(Event):
-
     @override
     def get_type(self) -> str:
         return "request"
