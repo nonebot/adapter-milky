@@ -184,6 +184,16 @@ class GroupEssenceMessage(ModelBase):
     """消息段列表"""
 
 
+class GroupEssenceMessageResponse(ModelBase):
+    """群精华消息响应"""
+
+    messages: list[GroupEssenceMessage]
+    """群精华消息列表"""
+
+    is_end: bool
+    """是否已到最后一页"""
+
+
 class FriendRequest(ModelBase):
     """好友请求"""
 

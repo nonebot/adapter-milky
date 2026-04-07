@@ -276,7 +276,7 @@ class Forward(MessageSegment):
                     ],
                 },
             )
-        return cls("forward", {"forward_id": data["forward_id"]})
+        return cls("forward", {"forward_id": data["forward_id"], "title": data.get("title", ""), "preview": data.get("preview", []), "summary": data.get("summary", "")})
 
     def dump(self):
         if "messages" not in self.data:

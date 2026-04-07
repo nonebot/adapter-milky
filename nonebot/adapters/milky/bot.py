@@ -21,7 +21,7 @@ from .model.api import (
     GroupNotification,
     ImplInfo,
     LoginInfo,
-    MessageResponse,
+    MessageResponse, GroupEssenceMessageResponse,
 )
 from .model.common import Friend, Group, Member, Profile
 from .model.message import IncomingForwardedMessage, IncomingMessage
@@ -205,7 +205,7 @@ class Bot(BaseBot):
         else:
             raise TypeError(event)
 
-    # =-=-= 消息 API =-=-=
+    # region 消息 API
 
     @api
     async def send_private_message(
@@ -213,15 +213,15 @@ class Bot(BaseBot):
         *,
         user_id: int,
         message: str | MessageSegment | Sequence[MessageSegment],
-    ):
+    ) -> MessageResponse:
         """发送私聊消息
 
         Args:
-            user_id: 好友 QQ 号
-            message: 消息内容
+            user_id (int): 好友 QQ 号
+            message (str | MessageSegment | Sequence[MessageSegment]): 消息内容
 
         Returns:
-            消息结果 (message_seq, time)
+            MessageResponse: 消息结果 (message_seq, time)
         """
         _message = Message(message)
         _message = await _message.sendable(self)
@@ -240,14 +240,14 @@ class Bot(BaseBot):
         *,
         group_id: int,
         message: str | MessageSegment | Sequence[MessageSegment],
-    ):
+    ) -> MessageResponse:
         """发送群消息
 
         Args:
-            group_id: 群号
-            message: 消息内容
+            group_id (int): 群号
+            message (str | MessageSegment | Sequence[MessageSegment]): 消息内容
         Returns:
-            消息结果 (message_seq, time)
+            MessageResponse: 消息结果 (message_seq, time)
         """
 
         _message = Message(message)
@@ -262,15 +262,15 @@ class Bot(BaseBot):
         return type_validate_python(MessageResponse, result)
 
     @api
-    async def get_message(self, *, message_scene: str, peer_id: int, message_seq: int) -> IncomingMessage:
+    async def get_message(self, *, message_scene: Literal["group", "friend", "temp"], peer_id: int, message_seq: int) -> IncomingMessage:
         """获取消息
 
         Args:
-            message_scene: 消息场景
-            peer_id: 好友 QQ 号或群号
-            message_seq: 消息序列号
+            message_scene ("group" | "friend" | "temp"): 消息场景
+            peer_id (int): 好友 QQ 号或群号
+            message_seq (int): 消息序列号
         Returns:
-            消息对象 (IncomingMessage)
+            IncomingMessage: 消息对象
         """
 
         result = await self._call("get_message", locals())
@@ -280,7 +280,7 @@ class Bot(BaseBot):
     async def get_history_messages(
         self,
         *,
-        message_scene: str,
+        message_scene: Literal["group", "friend", "temp"],
         peer_id: int,
         start_message_seq: int | None = None,
         limit: int = 20,
@@ -288,12 +288,12 @@ class Bot(BaseBot):
         """获取历史消息列表
 
         Args:
-            message_scene: 消息场景
-            peer_id: 好友 QQ 号或群号
-            start_message_seq: 起始消息序列号，不提供则从最新消息开始
-            limit: 获取的最大消息数量
+            message_scene ("group" | "friend" | "temp"): 消息场景
+            peer_id (int): 好友 QQ 号或群号
+            start_message_seq (int, optional): 起始消息序列号，不提供则从最新消息开始
+            limit (int): 获取的最大消息数量，最多 30 条, 默认值：20
         Returns:
-            消息列表 (list[IncomingMessage]) 和下一页起始消息序列号
+            (list[IncomingMessage], int): 消息列表和下一页起始消息序列号
         """
 
         result = await self._call("get_history_messages", locals())
@@ -304,9 +304,9 @@ class Bot(BaseBot):
         """获取资源临时链接
 
         Args:
-            resource_id: 资源 ID
+            resource_id (str): 资源 ID
         Returns:
-            可下载的临时链接
+            str: 可下载的临时链接
         """
 
         result = await self._call("get_resource_temp_url", {"resource_id": resource_id})
@@ -317,9 +317,9 @@ class Bot(BaseBot):
         """获取合并转发消息内容
 
         Args:
-            forward_id: 转发消息 ID
+            forward_id (str): 转发消息 ID
         Returns:
-            消息列表 (list[IncomingMessage])
+            list[IncomingForwardedMessage]: 转发消息内容
         """
         result = await self._call("get_forwarded_messages", {"forward_id": forward_id})
         return type_validate_python(list[IncomingForwardedMessage], result["messages"])
@@ -329,8 +329,8 @@ class Bot(BaseBot):
         """撤回私聊消息
 
         Args:
-            user_id: 好友 QQ 号
-            message_seq: 消息序列号
+            user_id (int): 好友 QQ 号
+            message_seq (int): 消息序列号
         """
         await self._call("recall_private_message", locals())
 
@@ -339,23 +339,24 @@ class Bot(BaseBot):
         """撤回群消息
 
         Args:
-            group_id: 群号
-            message_seq: 消息序列号
+            group_id (int): 群号
+            message_seq (int): 消息序列号
         """
         await self._call("recall_group_message", locals())
 
     @api
-    async def mark_message_as_read(self, *, message_scene: str, peer_id: int, message_seq: int) -> None:
+    async def mark_message_as_read(self, *, message_scene: Literal["group", "friend", "temp"], peer_id: int, message_seq: int) -> None:
         """标记消息为已读
 
         Args:
-            message_scene: 消息场景
-            peer_id: 好友 QQ 号或群号
-            message_seq: 标为已读的消息序列号，该消息及更早的消息将被标记为已读
+            message_scene ("group" | "friend" | "temp"): 消息场景
+            peer_id (int): 好友 QQ 号或群号
+            message_seq (int): 标为已读的消息序列号，该消息及更早的消息将被标记为已读
         """
         await self._call("mark_message_as_read", locals())
 
-    # =-=-= 系统 API =-=-=
+    # endregion
+    # region 系统 API
 
     @api
     async def get_login_info(self) -> LoginInfo:
@@ -374,9 +375,9 @@ class Bot(BaseBot):
         """获取用户资料
 
         Args:
-            user_id: 用户 QQ 号
+            user_id (int): 用户 QQ 号
         Returns:
-            用户资料字典
+            Profile: 用户资料字典
         """
         result = await self._call("get_user_profile", {"user_id": user_id})
         return type_validate_python(Profile, result)
@@ -389,7 +390,14 @@ class Bot(BaseBot):
 
     @api
     async def get_friend_info(self, *, user_id: int, no_cache: bool = False) -> Friend:
-        """获取好友信息"""
+        """获取好友信息
+
+        Args:
+            user_id (int): 好友 QQ 号
+            no_cache (bool, optional): 是否强制不使用缓存，默认值：false
+        Returns:
+            Friend: 好友信息字典
+        """
         result = await self._call("get_friend_info", locals())
         return type_validate_python(Friend, result["friend"])
 
@@ -401,21 +409,63 @@ class Bot(BaseBot):
 
     @api
     async def get_group_info(self, *, group_id: int, no_cache: bool = False) -> Group:
-        """获取群信息"""
+        """获取群信息
+
+        Args:
+            group_id (int): 群号
+            no_cache (bool, optional): 是否强制不使用缓存，默认值：false
+        Returns:
+            Group: 群信息字典
+        """
         result = await self._call("get_group_info", locals())
         return type_validate_python(Group, result["group"])
 
     @api
     async def get_group_member_list(self, *, group_id: int, no_cache: bool = False) -> list[Member]:
-        """获取群成员列表"""
+        """获取群成员列表
+
+        Args:
+            group_id (int): 群号
+            no_cache (bool, optional): 是否强制不使用缓存，默认值：false
+        Returns:
+            list[Member]: 群成员列表
+        """
         result = await self._call("get_group_member_list", locals())
         return type_validate_python(list[Member], result["members"])
 
     @api
     async def get_group_member_info(self, *, group_id: int, user_id: int, no_cache: bool = False) -> Member:
-        """获取群成员信息"""
+        """获取群成员信息
+
+        Args:
+            group_id (int): 群号
+            user_id (int): 成员 QQ 号
+            no_cache (bool, optional): 是否强制不使用缓存，默认值：false
+        Returns:
+            Member: 群成员信息字典
+        """
         result = await self._call("get_group_member_info", locals())
         return type_validate_python(Member, result["member"])
+
+    @api
+    async def get_peer_pins(self):
+        """获取置顶好友和群列表"""
+        result = await self._call("get_peer_pins")
+        return {
+            "friends": type_validate_python(list[Friend], result["friends"]),
+            "groups": type_validate_python(list[Group], result["groups"]),
+        }
+
+    @api
+    async def set_peer_pin(self, *, message_scene: Literal["group", "friend", "temp"], peer_id: int, is_pinned: bool = True) -> None:
+        """设置置顶好友或群
+
+        Args:
+            message_scene ("group" | "friend" | "temp"): 要设置的会话的消息场景
+            peer_id (int): 要设置的会话的好友 QQ 号或群号
+            is_pinned (bool, optional): 是否置顶，默认为 true，设置为 false 可取消置顶
+        """
+        await self._call("set_peer_pin", locals())
 
     @api
     async def set_avatar(
@@ -431,22 +481,32 @@ class Bot(BaseBot):
         image_uri: 图像文件 URI，支持 file:// http(s):// base64:// 三种格式
 
         Args:
-            url: 图像 URL
-            path: 图像文件路径
-            base64: 图像文件 base64 编码
-            raw: 图像文件二进制数据
+            url (str, optional): 图像 URL
+            path (str | Path, optional): 图像文件路径
+            base64 (str, optional): 图像文件 base64 编码
+            raw (bytes | BytesIO, optional): 图像文件二进制数据
+        Raises:
+            ValueError: 如果没有提供任何图像数据，或提供了多种图像数据
         """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
         await self._call("set_avatar", {"uri": uri})
 
     @api
     async def set_nickname(self, *, new_nickname: str) -> None:
-        """设置用户昵称"""
+        """设置用户昵称
+
+        Args:
+            new_nickname (str): 新昵称
+        """
         await self._call("set_nickname", {"new_nickname": new_nickname})
 
     @api
     async def set_bio(self, *, new_bio: str) -> None:
-        """设置用户个性签名"""
+        """设置用户个性签名
+
+        Args:
+            new_bio (str): 新个性签名
+        """
         await self._call("set_bio", {"new_bio": new_bio})
 
     @api
@@ -457,7 +517,11 @@ class Bot(BaseBot):
 
     @api
     async def get_cookies(self, *, domain: str):
-        """获取指定域名的 Cookie"""
+        """获取指定域名的 Cookie
+
+        Args:
+            domain (str): 域名，例如 "qq.com"
+        """
         result = await self._call("get_cookies", {"domain": domain})
         return result["cookies"]
 
@@ -467,21 +531,36 @@ class Bot(BaseBot):
         result = await self._call("get_csrf_token")
         return result["csrf_token"]
 
-    # =-=-= 好友 API =-=-=
+    # endregion
+    # region 好友 API
 
     @api
     async def send_friend_nudge(self, *, user_id: int, is_self: bool = False) -> None:
-        """发送好友头像双击动作"""
+        """发送好友头像双击动作
+
+        Args:
+            user_id (int): 好友 QQ 号
+            is_self (bool, optional): 是否向自己发送，默认为 false
+        """
         await self._call("send_friend_nudge", locals())
 
     @api
     async def send_profile_like(self, *, user_id: int, count: int = 1) -> None:
-        """发送个人名片点赞动作"""
+        """发送个人名片点赞动作
+
+        Args:
+            user_id (int): 好友 QQ 号
+            count (int, optional): 点赞次数，默认为 1
+        """
         await self._call("send_profile_like", locals())
 
     @api
     async def delete_friend(self, *, user_id: int) -> None:
-        """删除好友"""
+        """删除好友
+
+        Args:
+            user_id (int): 好友 QQ 号
+        """
         await self._call("delete_friend", {"user_id": user_id})
 
     @api
@@ -489,8 +568,11 @@ class Bot(BaseBot):
         """获取好友请求列表
 
         Args:
-            limit: 获取的最大请求数量
-            is_filtered: 是否只获取被过滤（由风险账号发起）的通知
+            limit (int): 获取的最大请求数量
+            is_filtered (bool, optional): true 表示只获取被过滤（由风险账号发起）的通知，false 表示只获取未被过滤的通知，默认值：false
+
+        Returns:
+            list[FriendRequest]: 好友请求列表
         """
         result = await self._call("get_friend_requests", locals())
         return type_validate_python(list[FriendRequest], result["requests"])
@@ -500,8 +582,8 @@ class Bot(BaseBot):
         """同意好友请求
 
         Args:
-            initiator_uid: 请求发起者 UID
-            is_filtered: 是否是被过滤的请求
+            initiator_uid (str): 请求发起者 UID
+            is_filtered (bool, optional): 是否是被过滤的请求
         """
         await self._call("accept_friend_request", locals())
 
@@ -512,17 +594,23 @@ class Bot(BaseBot):
         """拒绝好友请求
 
         Args:
-            initiator_uid: 请求发起者 UID
-            is_filtered: 是否是被过滤的请求
-            reason: 拒绝理由
+            initiator_uid (str): 请求发起者 UID
+            is_filtered (bool, optional): 是否是被过滤的请求
+            reason (str, optional): 拒绝理由
         """
         await self._call("reject_friend_request", locals())
 
-    # =-=-= 群聊 API =-=-=
+    # endregion
+    # region 群聊 API
 
     @api
     async def set_group_name(self, *, group_id: int, new_group_name: str) -> None:
-        """设置群名称"""
+        """设置群名称
+
+        Args:
+            group_id (int): 群号
+            new_group_name (str): 新群名称
+        """
         await self._call("set_group_name", locals())
 
     @api
@@ -540,11 +628,13 @@ class Bot(BaseBot):
         image_uri: 图像文件 URI，支持 file:// http(s):// base64:// 三种格式
 
         Args:
-            group_id: 群号
-            url: 图像 URL
-            path: 图像文件路径
-            base64: 图像文件 base64 编码
-            raw: 图像文件二进制数据
+            group_id (int): 群号
+            url (str, optional): 图像 URL
+            path (str | Path, optional): 图像文件路径
+            base64 (str, optional): 图像文件 base64 编码
+            raw (bytes | BytesIO, optional): 图像文件二进制数据
+        Raises:
+            ValueError: 如果没有提供任何图像数据，或提供了多种图像数据
         """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
         await self._call("set_group_avatar", {"group_id": group_id, "image_uri": uri})
@@ -554,9 +644,9 @@ class Bot(BaseBot):
         """设置群成员名片
 
         Args:
-            group_id: 群号
-            user_id: 被设置的成员 QQ 号
-            card: 新群名片
+            group_id (int): 群号
+            user_id (int): 被设置的成员 QQ 号
+            card (str): 新群名片
         """
         await self._call("set_group_member_card", locals())
 
@@ -565,9 +655,9 @@ class Bot(BaseBot):
         """设置群成员专属头衔
 
         Args:
-            group_id: 群号
-            user_id: 被设置的成员 QQ 号
-            special_title: 专属头衔
+            group_id (int): 群号
+            user_id (int): 被设置的成员 QQ 号
+            special_title (str): 专属头衔
         """
         await self._call("set_group_member_special_title", locals())
 
@@ -576,9 +666,9 @@ class Bot(BaseBot):
         """设置群管理员
 
         Args:
-            group_id: 群号
-            user_id: 被设置的成员 QQ 号
-            is_set: 是否设置为管理员，false 为取消管理员
+            group_id (int): 群号
+            user_id (int): 被设置的成员 QQ 号
+            is_set (str): 是否设置为管理员，false 为取消管理员
         """
         await self._call("set_group_member_admin", locals())
 
@@ -587,9 +677,9 @@ class Bot(BaseBot):
         """设置群成员禁言
 
         Args:
-            group_id: 群号
-            user_id: 被设置的成员 QQ 号
-            duration: 禁言时长，单位为秒，0 为取消禁言
+            group_id (int): 群号
+            user_id (int): 被设置的成员 QQ 号
+            duration (int): 禁言时长，单位为秒，0 为取消禁言
         """
         await self._call("set_group_member_mute", locals())
 
@@ -598,8 +688,8 @@ class Bot(BaseBot):
         """设置全员禁言
 
         Args:
-            group_id: 群号
-            is_mute: 是否设置为全员禁言，false 为取消全员禁言
+            group_id (int): 群号
+            is_mute (bool): 是否设置为全员禁言，false 为取消全员禁言
         """
         await self._call("set_group_whole_mute", locals())
 
@@ -608,9 +698,9 @@ class Bot(BaseBot):
         """踢出群成员
 
         Args:
-            group_id: 群号
-            user_id: 被踢出的成员 QQ 号
-            reject_add_request: 是否拒绝后续的加群请求，默认不拒绝
+            group_id (int): 群号
+            user_id (int): 被踢出的成员 QQ 号
+            reject_add_request (bool): 是否拒绝后续的加群请求，默认不拒绝
         """
         await self._call("kick_group_member", locals())
 
@@ -619,7 +709,7 @@ class Bot(BaseBot):
         """获取群公告列表
 
         Args:
-            group_id: 群号
+            group_id (int): 群号
         """
         result = await self._call("get_group_announcements", {"group_id": group_id})
         return type_validate_python(list[Announcement], result["announcements"])
@@ -639,15 +729,20 @@ class Bot(BaseBot):
 
         image_uri: 公告图片 URI，支持 file:// http(s):// base64:// 三种格式
 
+        *注意*：公告图片为可选项
+
         Args:
-            group_id: 群号
-            content: 公告内容
-            url: 公告图片 URL
-            path: 公告图片文件路径
-            base64: 公告图片文件 base64 编码
-            raw: 公告图片文件二进制数据
+            group_id (int): 群号
+            content (str): 公告内容
+            url (str, optional): 公告图片 URL
+            path (str | Path, optional): 公告图片文件路径
+            base64 (str, optional): 公告图片文件 base64 编码
+            raw (bytes | BytesIO, optional): 公告图片文件二进制数据
         """
-        uri = to_uri(url=url, path=path, base64=base64, raw=raw)
+        try:
+            uri = to_uri(url=url, path=path, base64=base64, raw=raw)
+        except ValueError:
+            uri = None
         await self._call("send_group_announcement", {"group_id": group_id, "content": content, "image_uri": uri})
 
     @api
@@ -655,36 +750,33 @@ class Bot(BaseBot):
         """删除群公告
 
         Args:
-            group_id: 群号
-            announcement_id: 公告 ID
+            group_id (int): 群号
+            announcement_id (str): 公告 ID
         """
         await self._call("delete_group_announcement", locals())
 
     @api
-    async def get_group_essence_messages(self, *, group_id: int, page_index: int, page_size: int) -> dict:
+    async def get_group_essence_messages(self, *, group_id: int, page_index: int, page_size: int) -> GroupEssenceMessageResponse:
         """获取群精华消息
 
         Args:
-            group_id: 群号
-            page_index: 页码索引，从 0 开始
-            page_size: 每页包含的精华消息数量
+            group_id (int): 群号
+            page_index (int): 页码索引，从 0 开始
+            page_size (int): 每页包含的精华消息数量
         Returns:
-            精华消息列表和是否已到最后一页
+            GroupEssenceMessageResponse: 精华消息列表和是否已到最后一页
         """
         result = await self._call("get_group_essence_messages", locals())
-        return {
-            "messages": type_validate_python(list[GroupEssenceMessage], result["messages"]),
-            "is_end": result["is_end"],
-        }
+        return type_validate_python(GroupEssenceMessageResponse, result)
 
     @api
     async def set_group_essence_message(self, *, group_id: int, message_seq: int, is_set: bool = True) -> None:
         """设置群精华消息
 
         Args:
-            group_id: 群号
-            message_seq: 消息序列号
-            is_set: 是否设置为精华消息，false 表示取消精华
+            group_id (int): 群号
+            message_seq (int): 消息序列号
+            is_set (bool): 是否设置为精华消息，false 表示取消精华
         """
         await self._call("set_group_essence_message", locals())
 
@@ -693,21 +785,28 @@ class Bot(BaseBot):
         """退出群聊
 
         Args:
-            group_id: 群号
+            group_id (int): 群号
         """
         await self._call("quit_group", locals())
 
     @api
     async def send_group_message_reaction(
-        self, *, group_id: int, message_seq: int, reaction: str, is_add: bool = True
+        self,
+        *,
+        group_id: int,
+        message_seq: int,
+        reaction: str,
+        reaction_type: Literal["face", "emoji"] = "face",
+        is_add: bool = True
     ) -> None:
         """发送群消息表情
 
         Args:
-            group_id: 群号
-            message_seq: 消息序列号
-            reaction: 表情名称
-            is_add: 是否添加表情，false 为删除表情
+            group_id (int): 群号
+            message_seq (int): 消息序列号
+            reaction (str): 发送的回应的表情 ID
+            reaction_type ("face" | "emoji"): 表情类型，默认为 "face"，可选值为 "face" 或 "emoji"
+            is_add (bool, optional): 是否添加表情，false 为删除表情
         """
         await self._call("send_group_message_reaction", locals())
 
@@ -716,8 +815,8 @@ class Bot(BaseBot):
         """发送群头像双击动作
 
         Args:
-            group_id: 群号
-            user_id: 被戳的群成员 QQ 号
+            group_id (int): 群号
+            user_id (int): 被双击的群成员 QQ 号
         """
         await self._call("send_group_nudge", locals())
 
@@ -728,11 +827,11 @@ class Bot(BaseBot):
         """获取群通知
 
         Args:
-            start_notification_seq: 起始通知序列号
-            is_filtered: 是否只获取被过滤（由风险账号发起）的通知
-            limit: 获取的最大通知数量
+            start_notification_seq (int): 起始通知序列号
+            is_filtered (bool, optional): true 表示只获取被过滤（由风险账号发起）的通知，false 表示只获取未被过滤的通知，默认值：false
+            limit (int, optional): 获取的最大通知数量，默认值：20
         Returns:
-            通知列表和下一页起始通知序列号
+            (list[GroupNotification], int): 通知列表和下一页起始通知序列号
         """
         result = await self._call("get_group_notifications", locals())
         return type_validate_python(list[GroupNotification], result["notifications"]), result["next_notification_seq"]
@@ -749,10 +848,10 @@ class Bot(BaseBot):
         """同意群请求
 
         Args:
-            notification_seq: 请求对应的通知序列号
-            notification_type: 请求对应的通知类型, 可选值为 "join_request" 或 "invited_join_request"
-            group_id: 请求所在的群号
-            is_filtered: 是否是被过滤的请求
+            notification_seq (int): 请求对应的通知序列号
+            notification_type ("join_request" | "invited_join_request"): 请求对应的通知类型
+            group_id (int): 请求所在的群号
+            is_filtered (bool, optional): 是否是被过滤的请求
         """
         await self._call("accept_group_request", locals())
 
@@ -769,11 +868,11 @@ class Bot(BaseBot):
         """拒绝群请求
 
         Args:
-            notification_seq: 请求对应的通知序列号
-            notification_type: 请求对应的通知类型, 可选值为 "join_request" 或 "invited_join_request"
-            group_id: 请求所在的群号
-            is_filtered: 是否是被过滤的请求
-            reason: 拒绝理由
+            notification_seq (int): 请求对应的通知序列号
+            notification_type ("join_request" | "invited_join_request"): 请求对应的通知类型
+            group_id (int): 请求所在的群号
+            is_filtered (bool, optional): 是否是被过滤的请求
+            reason (str, optional): 拒绝理由
         """
         await self._call("reject_group_request", locals())
 
@@ -782,8 +881,8 @@ class Bot(BaseBot):
         """同意群邀请
 
         Args:
-            group_id: 群号
-            invitation_seq: 邀请序列号
+            group_id (int): 群号
+            invitation_seq (int): 邀请序列号
         """
         await self._call("accept_group_invitation", locals())
 
@@ -792,13 +891,13 @@ class Bot(BaseBot):
         """拒绝群邀请
 
         Args:
-            group_id: 群号
-            invitation_seq: 邀请序列号
+            group_id (int): 群号
+            invitation_seq (int): 邀请序列号
         """
         await self._call("reject_group_invitation", locals())
 
-    # =-=-= 文件 API =-=-=
-
+    # endregion
+    # region 文件 API
     @api
     async def upload_private_file(
         self,
@@ -815,14 +914,16 @@ class Bot(BaseBot):
         file_uri: 文件 URI，支持 file:// http(s):// base64:// 三种格式
 
         Args:
-            user_id: 好友 QQ 号
-            url: 文件 URL
-            path: 文件路径
-            base64: 文件 base64 编码
-            raw: 文件二进制数据
-            file_name: 文件名，若未提供则使用文件路径的文件名
+            user_id (int): 好友 QQ 号
+            url (str, optional): 文件 URL
+            path (str | Path, optional): 文件路径
+            base64 (str, optional): 文件 base64 编码
+            raw (bytes | BytesIO, optional): 文件二进制数据
+            file_name (str, optional): 文件名，若未提供则使用文件路径的文件名
         Returns:
-            文件 ID
+            str: 文件 ID
+        Raises:
+            ValueError: 如果没有提供任何文件数据，或提供了多种文件数据，或未提供 file_name 且 path 也未提供
         """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
         if file_name is None:
@@ -849,15 +950,17 @@ class Bot(BaseBot):
         file_uri: 文件 URI，支持 file:// http(s):// base64:// 三种格式
 
         Args:
-            group_id: 群号
-            url: 文件 URL
-            path: 文件路径
-            base64: 文件 base64 编码
-            raw: 文件二进制数据
-            file_name: 文件名，若未提供则使用文件路径中的文件名
-            parent_folder_id: 父文件夹 ID，默认为根目录
+            group_id (int): 群号
+            url (str, optional): 文件 URL
+            path (str | Path, optional): 文件路径
+            base64 (str, optional): 文件 base64 编码
+            raw (bytes | BytesIO, optional): 文件二进制数据
+            file_name (str, optional): 文件名，若未提供则使用文件路径中的文件名
+            parent_folder_id (str, optional): 父文件夹 ID，默认为根目录
         Returns:
             文件 ID
+        Raises:
+            ValueError: 如果没有提供任何文件数据，或提供了多种文件数据，或未提供 file_name 且 path 也未提供
         """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
         if file_name is None:
@@ -875,11 +978,11 @@ class Bot(BaseBot):
         """获取私聊文件下载链接
 
         Args:
-            user_id: 好友 QQ 号
-            file_id: 文件 ID
-            file_hash: 文件的 TriSHA1 哈希值
+            user_id (int): 好友 QQ 号
+            file_id (str): 文件 ID
+            file_hash (str): 文件的 TriSHA1 哈希值
         Returns:
-            文件下载链接
+            str: 文件下载链接
         """
         result = await self._call("get_private_file_download_url", locals())
         return result["download_url"]
@@ -889,10 +992,10 @@ class Bot(BaseBot):
         """获取群文件下载链接
 
         Args:
-            group_id: 群号
-            file_id: 文件 ID
+            group_id (int): 群号
+            file_id (str): 文件 ID
         Returns:
-            可下载的链接
+            str: 可下载的链接
         """
         result = await self._call("get_group_file_download_url", locals())
         return result["download_url"]
@@ -902,8 +1005,10 @@ class Bot(BaseBot):
         """获取群文件列表
 
         Args:
-            group_id: 群号
-            parent_folder_id: 父文件夹 ID，默认为根目录
+            group_id (int): 群号
+            parent_folder_id (str, optional): 父文件夹 ID，默认为根目录
+        Returns:
+            FilesInfo: 群文件列表 (list[FileInfo]) 和文件夹列表 (list[FolderInfo])
         """
         result = await self._call("get_group_files", locals())
         return type_validate_python(FilesInfo, result)
@@ -915,10 +1020,10 @@ class Bot(BaseBot):
         """移动群文件
 
         Args:
-            group_id: 群号
-            file_id: 文件 ID
-            parent_folder_id: 文件所在的文件夹 ID
-            target_folder_id: 目标文件夹 ID
+            group_id (int): 群号
+            file_id (str): 文件 ID
+            parent_folder_id (str, optional): 文件所在的文件夹 ID
+            target_folder_id (str, optional): 目标文件夹 ID
         """
         await self._call("move_group_file", locals())
 
@@ -929,10 +1034,10 @@ class Bot(BaseBot):
         """重命名群文件
 
         Args:
-            group_id: 群号
-            file_id: 文件 ID
-            parent_folder_id: 文件所在的文件夹 ID
-            new_file_name: 新文件名称
+            group_id (int): 群号
+            file_id (str): 文件 ID
+            parent_folder_id (str, optional): 文件所在的文件夹 ID，默认值：/
+            new_file_name (str): 新文件名称
         """
         await self._call("rename_group_file", locals())
 
@@ -941,8 +1046,8 @@ class Bot(BaseBot):
         """删除群文件
 
         Args:
-            group_id: 群号
-            file_id: 文件 ID
+            group_id (int): 群号
+            file_id (str): 文件 ID
         """
         await self._call("delete_group_file", locals())
 
@@ -951,10 +1056,10 @@ class Bot(BaseBot):
         """创建群文件夹
 
         Args:
-            group_id: 群号
-            folder_name: 文件夹名
+            group_id (int): 群号
+            folder_name (str): 文件夹名
         Returns:
-            新建文件夹的 ID
+            str: 新建文件夹的 ID
         """
         result = await self._call("create_group_folder", locals())
         return result["folder_id"]
@@ -964,9 +1069,9 @@ class Bot(BaseBot):
         """重命名群文件夹
 
         Args:
-            group_id: 群号
-            folder_id: 文件夹 ID
-            new_folder_name: 新文件夹名
+            group_id (int): 群号
+            folder_id (str): 文件夹 ID
+            new_folder_name (str): 新文件夹名
         """
         await self._call("rename_group_folder", locals())
 
@@ -975,7 +1080,9 @@ class Bot(BaseBot):
         """删除群文件夹
 
         Args:
-            group_id: 群号
-            folder_id: 文件夹 ID
+            group_id (int): 群号
+            folder_id (str): 文件夹 ID
         """
         await self._call("delete_group_folder", locals())
+
+    # endregion
