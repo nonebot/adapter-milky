@@ -110,7 +110,7 @@ def to_uri(
         return f"base64://{base64}"
     if raw:
         if isinstance(raw, BytesIO):
-            _base64 = b64encode(raw.read()).decode()
+            _base64 = b64encode(raw.getvalue()).decode()
         else:
             _base64 = b64encode(raw).decode()
         return f"base64://{_base64}"
