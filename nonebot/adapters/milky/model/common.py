@@ -84,6 +84,21 @@ class Group(ModelBase):
     max_member_count: int
     """群最大成员人数"""
 
+    remark: str = ""
+    """群备注"""
+
+    created_time: int = 0
+    """群创建时间，Unix 时间戳（秒）"""
+
+    description: str = ""
+    """群简介"""
+
+    question: str = ""
+    """入群问题"""
+
+    announcement: str = ""
+    """群公告预览（通常是该群最近一次的群公告内容节选）"""
+
 
 class Member(ModelBase):
     """群成员信息"""
@@ -113,10 +128,10 @@ class Member(ModelBase):
     """成员角色"""
 
     join_time: int
-    """成员入群时间"""
+    """成员入群时间，Unix 时间戳（秒）"""
 
     last_sent_time: int
-    """成员最后发言时间"""
+    """成员最后发言时间，Unix 时间戳（秒）"""
 
     shut_up_end_time: int | None = None
-    """成员禁言结束时间"""
+    """成员禁言结束时间，Unix 时间戳（秒）"""

@@ -1,14 +1,14 @@
+from base64 import b64encode
+from collections.abc import Awaitable, Callable
+from functools import partial
 from io import BytesIO
 from pathlib import Path
-from base64 import b64encode
-from functools import partial
+from typing import TYPE_CHECKING, Any, Concatenate, Generic, TypeVar, overload
 from typing_extensions import ParamSpec
-from collections.abc import Callable, Awaitable
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, Concatenate, overload
 
 from nonebot.utils import logger_wrapper
 
-from .exception import ActionFailed, NetworkError, UnsupportedApi, InvalidAccessToken, UnsupportedContentType
+from .exception import ActionFailed, InvalidAccessToken, NetworkError, UnsupportedApi, UnsupportedContentType
 
 if TYPE_CHECKING:
     from .bot import Bot

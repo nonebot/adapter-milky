@@ -1,15 +1,15 @@
 from copy import deepcopy
-from typing_extensions import override
 from typing import TYPE_CHECKING, Literal, TypeVar
+from typing_extensions import override
 
-from nonebot.utils import escape_tag
-from nonebot.matcher import current_bot
-from nonebot.internal.adapter import Event as BaseEvent
 from nonebot.compat import model_dump, model_validator, type_validate_python
+from nonebot.internal.adapter import Event as BaseEvent
+from nonebot.matcher import current_bot
+from nonebot.utils import escape_tag
 
+from .message import Message, MessageSegment, Reply
 from .model import ModelBase
 from .model.message import IncomingMessage
-from .message import Reply, Message, MessageSegment
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -230,6 +230,41 @@ class MessageRecallEvent(NoticeEvent):
     def get_session_id(self) -> str:
         if self.data.message_scene == "group":
             return f"{self.data.peer_id}_{self.data.sender_id}"
+        return str(self.data.peer_id)
+
+
+class PeerPinChangeData(ModelBase):
+    """会话置顶变更事件"""
+
+    message_scene: Literal["friend", "group", "temp"]
+    """消息场景"""
+
+    peer_id: int
+    """好友 QQ号或群号"""
+
+    is_pinned: bool
+    """是否被置顶，True 为置顶，False 为取消置顶"""
+
+
+@register_event_class
+class PeerPinChangeEvent(NoticeEvent):
+    """会话置顶变更事件"""
+
+    __event_type__ = "peer_pin_change"
+
+    data: PeerPinChangeData
+
+    @override
+    def get_event_name(self) -> str:
+        return f"peer_pin_change:{self.data.message_scene}"
+
+    @property
+    def is_private(self) -> bool:
+        """是否为私聊消息"""
+        return self.data.message_scene == "friend"
+
+    @override
+    def get_session_id(self) -> str:
         return str(self.data.peer_id)
 
 
@@ -493,6 +528,9 @@ class GroupMessageReactionData(ModelBase):
     face_id: str
     """表情 ID"""
 
+    reaction_type: Literal["face", "emoji"]
+    """收到的回应类型"""
+
     is_add: bool
     """是否添加表情，True 为添加，False 为取消"""
 
@@ -667,7 +705,6 @@ class GroupFileUploadEvent(NoticeEvent):
 
 
 class RequestEvent(Event):
-
     @override
     def get_type(self) -> str:
         return "request"
@@ -850,6 +887,9 @@ class GroupInvitationData(ModelBase):
 
     initiator_id: int
     """邀请者 QQ 号"""
+
+    source_group_id: int | None = None
+    """邀请来源群号，如果是通过 QQ 群邀请"""
 
 
 @register_event_class

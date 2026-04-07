@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Union, Literal
+from typing import Literal, Union
 
 from ..message import Reply
 from .base import ModelBase
@@ -182,6 +182,16 @@ class GroupEssenceMessage(ModelBase):
 
     segments: list[dict]
     """消息段列表"""
+
+
+class GroupEssenceMessageResponse(ModelBase):
+    """群精华消息响应"""
+
+    messages: list[GroupEssenceMessage]
+    """群精华消息列表"""
+
+    is_end: bool
+    """是否已到最后一页"""
 
 
 class FriendRequest(ModelBase):

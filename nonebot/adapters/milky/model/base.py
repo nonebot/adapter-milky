@@ -1,10 +1,10 @@
 """Milky 数据模型."""
 
-from typing import Any
 from datetime import datetime
+from typing import Any
 
-from pydantic import BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump
+from pydantic import BaseModel
 
 
 class ModelBase(BaseModel):
@@ -30,7 +30,6 @@ class ModelBase(BaseModel):
         return res
 
     if PYDANTIC_V2:
-
         model_config: ConfigDict = ConfigDict(
             extra="allow",
             arbitrary_types_allowed=True,

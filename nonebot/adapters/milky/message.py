@@ -1,9 +1,9 @@
+from collections.abc import Iterable
+from dataclasses import asdict, dataclass, field
 from io import BytesIO
 from pathlib import Path
-from collections.abc import Iterable
-from dataclasses import field, asdict, dataclass
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypedDict
 from typing_extensions import NotRequired, override
-from typing import TYPE_CHECKING, Any, Literal, ClassVar, TypedDict
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
@@ -46,12 +46,20 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def text(content: str) -> "Text":
-        """纯文本消息段"""
+        """纯文本消息段
+
+        Args:
+            content: 文本内容
+        """
         return Text("text", {"text": content})
 
     @staticmethod
     def mention(user_id: int) -> "Mention":
-        """提及 (@) 消息段"""
+        """提及 (@) 消息段
+
+        Args:
+            user_id: 被提及的用户 QQ 号
+        """
         return Mention("mention", {"user_id": user_id})
 
     @staticmethod
@@ -61,12 +69,21 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def face(face_id: str, is_large: bool = False) -> "Face":
-        """表情消息段"""
+        """表情消息段
+
+        Args:
+            face_id: 表情 ID
+            is_large: 是否为超级表情，默认为 False
+        """
         return Face("face", {"face_id": face_id, "is_large": is_large})
 
     @staticmethod
     def reply(message_seq: int) -> "Reply":
-        """引用消息段"""
+        """引用消息段
+
+        Args:
+            message_seq: 被引用消息的序列号
+        """
         return Reply("reply", {"message_seq": message_seq})
 
     @staticmethod
@@ -79,7 +96,20 @@ class MessageSegment(BaseMessageSegment["Message"]):
         summary: str | None = None,
         sub_type: Literal["normal", "sticker"] = "normal",
     ):
-        """图片消息段"""
+        """图片消息段
+
+        uri: 文件 URI，支持 file:// http(s):// base64:// 三种格式
+
+        Args:
+            url (str, optional): 文件 URL
+            path (str | Path, optional): 文件路径
+            base64 (str, optional): 文件 base64 编码
+            raw (bytes | BytesIO, optional): 文件二进制数据
+            summary (str, optional): 图片预览文本
+            sub_type (str, optional): 图片类型，默认为 "normal"，可选 "sticker"（表情图片）
+        Raises:
+            ValueError: 如果未提供任何文件来源，或提供了多个文件来源
+        """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
         return Image("image", {"uri": uri, "summary": summary, "sub_type": sub_type})
 
@@ -91,7 +121,18 @@ class MessageSegment(BaseMessageSegment["Message"]):
         base64: str | None = None,
         raw: None | bytes | BytesIO = None,
     ):
-        """语音消息段"""
+        """语音消息段
+
+        uri: 文件 URI，支持 file:// http(s):// base64:// 三种格式
+
+        Args:
+            url (str, optional): 文件 URL
+            path (str | Path, optional): 文件路径
+            base64 (str, optional): 文件 base64 编码
+            raw (bytes | BytesIO, optional): 文件二进制数据
+        Raises:
+            ValueError: 如果未提供任何文件来源，或提供了多个文件来源
+        """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
         return Record("record", {"uri": uri})
 
@@ -107,7 +148,23 @@ class MessageSegment(BaseMessageSegment["Message"]):
         thumb_base64: str | None = None,
         thumb_raw: None | bytes | BytesIO = None,
     ):
-        """视频消息段"""
+        """视频消息段
+
+        uri: 文件 URI，支持 file:// http(s):// base64:// 三种格式
+        thumb_uri: 缩略图 URI，支持 file:// http(s):// base64:// 三种格式
+
+        Args:
+            url (str, optional): 文件 URL
+            path (str | Path, optional): 文件路径
+            base64 (str, optional): 文件 base64 编码
+            raw (bytes | BytesIO, optional): 文件二进制数据
+            thumb_url (str, optional): 缩略图 URL
+            thumb_path (str | Path, optional): 缩略图路径
+            thumb_base64 (str, optional): 缩略图 base64 编码
+            thumb_raw (bytes | BytesIO, optional): 缩略图二进制数据
+        Raises:
+            ValueError: 如果未提供任何文件来源，或提供了多个文件来源
+        """
         uri = to_uri(url=url, path=path, base64=base64, raw=raw)
         thumb_uri = (
             to_uri(url=thumb_url, path=thumb_path, base64=thumb_base64, raw=thumb_raw)
@@ -117,9 +174,25 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Video("video", {"uri": uri, "thumb_uri": thumb_uri})
 
     @staticmethod
-    def forward(messages: list["OutgoingForwardedMessage"]) -> "Forward":
-        """合并转发消息段"""
-        return Forward("forward", {"messages": messages})
+    def forward(
+        messages: list["OutgoingForwardedMessage"],
+        title: str | None = None,
+        preview: list[str] | None = None,
+        summary: str | None = None,
+        prompt: str | None = None,
+    ) -> "Forward":
+        """合并转发消息段
+
+        Args:
+            messages (list[OutgoingForwardedMessage]): 合并转发消息内容
+            title (str, optional): 合并转发标题
+            preview (list[str], optional): 合并转发预览文本，若提供，至少 1 条，至多 4 条
+            summary (str, optional): 合并转发摘要文本
+            prompt (str, optional): 合并转发的预览外显文本，仅对移动端 QQ 有效
+        """
+        return Forward(
+            "forward", {"messages": messages, "title": title, "preview": preview, "summary": summary, "prompt": prompt}
+        )
 
     @staticmethod
     def node(
@@ -127,8 +200,19 @@ class MessageSegment(BaseMessageSegment["Message"]):
         name: str,
         segments: "Message",
     ) -> "OutgoingForwardedMessage":
-        """合并转发消息节点"""
+        """合并转发消息节点
+
+        Args:
+            user_id (int): 发送者 QQ 号
+            name (str): 发送者名称
+            segments (Message): 消息内容
+        """
         return OutgoingForwardedMessage(user_id=user_id, sender_name=name, segments=segments)
+
+    @staticmethod
+    def light_app(json_payload: str) -> "LightAPP":
+        """小程序消息段"""
+        return LightAPP("light_app", {"json_payload": json_payload})
 
 
 class TextData(TypedDict):
@@ -142,6 +226,7 @@ class Text(MessageSegment):
 
 class MentionData(TypedDict):
     user_id: int
+    name: NotRequired[str]
 
 
 @dataclass
@@ -164,13 +249,50 @@ class Face(MessageSegment):
     data: FaceData = field(default_factory=dict)  # type: ignore
 
 
-class ReplyData(TypedDict):
+class IncomingReplyData(TypedDict):
+    message_seq: int
+    sender_id: int
+    sender_name: str | None
+    time: int
+    segments: list[MessageSegment]
+
+
+class OutgoingReplyData(TypedDict):
     message_seq: int
 
 
 @dataclass
 class Reply(MessageSegment):
-    data: ReplyData = field(default_factory=dict)  # type: ignore
+    data: IncomingReplyData | OutgoingReplyData = field(default_factory=dict)  # type: ignore
+
+    @classmethod
+    def parse(cls, data: dict[str, Any]) -> "Reply":
+        if "sender_id" not in data:
+            return cls("reply", {"message_seq": data["message_seq"]})
+        return cls(
+            "reply",
+            {
+                "message_seq": data["message_seq"],
+                "sender_id": data["sender_id"],
+                "sender_name": data.get("sender_name"),
+                "time": data["time"],
+                "segments": Message.from_elements(data["segments"]),
+            },
+        )
+
+    def dump(self):
+        if "sender_id" not in self.data:
+            return {"type": self.type, "data": {"message_seq": self.data["message_seq"]}}
+        return {
+            "type": self.type,
+            "data": {
+                "message_seq": self.data["message_seq"],
+                "sender_id": self.data["sender_id"],
+                "sender_name": self.data.get("sender_name"),
+                "time": self.data["time"],
+                "segments": [seg.dump() for seg in self.data["segments"]],
+            },
+        }
 
 
 class IncomingImageData(TypedDict):
@@ -254,6 +376,10 @@ class OutgoingForwardedMessage:
 
 class OutgoingForwardData(TypedDict):
     messages: list[OutgoingForwardedMessage]
+    title: str | None
+    preview: list[str] | None
+    summary: str | None
+    prompt: str | None
 
 
 @dataclass
@@ -274,9 +400,21 @@ class Forward(MessageSegment):
                         )
                         for msg in data["messages"]
                     ],
+                    "title": data.get("title"),
+                    "preview": data.get("preview"),
+                    "summary": data.get("summary"),
+                    "prompt": data.get("prompt"),
                 },
             )
-        return cls("forward", {"forward_id": data["forward_id"]})
+        return cls(
+            "forward",
+            {
+                "forward_id": data["forward_id"],
+                "title": data.get("title", ""),
+                "preview": data.get("preview", []),
+                "summary": data.get("summary", ""),
+            },
+        )
 
     def dump(self):
         if "messages" not in self.data:
@@ -310,7 +448,7 @@ class MarketFace(MessageSegment, element_type="market_face"):
 
 
 class LightAPPData(TypedDict):
-    app_name: str
+    app_name: NotRequired[str]
     json_payload: str
 
 
@@ -387,7 +525,7 @@ class Message(BaseMessage[MessageSegment]):
                         ]
                     )
                 )
-            elif isinstance(seg, (File, MarketFace, LightAPP, XML)):
+            elif isinstance(seg, (File, MarketFace, XML)):
                 continue
             else:
                 new.append(seg)

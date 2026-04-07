@@ -1,38 +1,37 @@
-import json
 import asyncio
+import json
 from typing import Any, cast
 from typing_extensions import override
 
-from nonebot.internal.driver import Response
-from nonebot.exception import WebSocketClosed
 from nonebot.compat import type_validate_python
-from nonebot.utils import DataclassEncoder, escape_tag
 from nonebot.drivers import (
     URL,
-    Driver,
-    Request,
     ASGIMixin,
-    WebSocket,
+    Driver,
     HTTPClientMixin,
     HTTPServerSetup,
+    Request,
+    WebSocket,
     WebSocketClientMixin,
 )
+from nonebot.exception import WebSocketClosed
+from nonebot.internal.driver import Response
+from nonebot.utils import DataclassEncoder, escape_tag
 
 from nonebot import get_plugin_config
 from nonebot.adapters import Adapter as BaseAdapter
 
 from .bot import Bot
-from .model import ModelBase
-from .config import Config, ClientInfo
+from .config import ClientInfo, Config
 from .event import EVENT_CLASSES, Event, MessageEvent
-from .exception import NetworkError, ApiNotAvailable, MilkyAdapterException
-from .utils import API, log, clean_params, handle_api_result, raise_api_response
+from .exception import ApiNotAvailable, MilkyAdapterException, NetworkError
+from .model import ModelBase
+from .utils import API, clean_params, handle_api_result, log, raise_api_response
 
 RECONNECT_INTERVAL = 3.0
 
 
 class Adapter(BaseAdapter):
-
     @override
     def __init__(self, driver: Driver, **kwargs: Any):
         super().__init__(driver, **kwargs)
@@ -83,9 +82,7 @@ class Adapter(BaseAdapter):
         if access_token:
             auth_header = None
             if request.headers:
-                auth_header = request.headers.get("Authorization") or request.headers.get(
-                    "authorization"
-                )
+                auth_header = request.headers.get("Authorization") or request.headers.get("authorization")
                 if auth_header is None:
                     for key, value in request.headers.items():
                         if key.lower() == "authorization":
@@ -121,7 +118,7 @@ class Adapter(BaseAdapter):
             except Exception as e:
                 log(
                     "ERROR",
-                    f"<r><bg #f8bbd0>Bad url {info.ws_url()!s} " "in milky forward websocket config</bg #f8bbd0></r>",
+                    f"<r><bg #f8bbd0>Bad url {info.ws_url()!s} in milky forward websocket config</bg #f8bbd0></r>",
                     e,
                 )
 
@@ -273,6 +270,6 @@ class Adapter(BaseAdapter):
         except Exception as e:
             log(
                 "ERROR",
-                "<r><bg #f8bbd0>Failed to parse event. " f"Raw: {escape_tag(str(json_data))}</bg #f8bbd0></r>",
+                f"<r><bg #f8bbd0>Failed to parse event. Raw: {escape_tag(str(json_data))}</bg #f8bbd0></r>",
                 e,
             )

@@ -1,8 +1,8 @@
 from typing import Literal
 
+from ..message import Message, MessageSegment, Reply
 from .base import ModelBase
-from .common import Group, Friend, Member
-from ..message import Reply, Message, MessageSegment
+from .common import Friend, Group, Member
 
 
 class IncomingMessage(ModelBase):
@@ -51,6 +51,9 @@ class IncomingMessage(ModelBase):
 
 class IncomingForwardedMessage(ModelBase):
     """接收的转发消息"""
+
+    message_seq: int | None = None
+    """消息序列号"""
 
     sender_name: str
     """发送者名称"""
