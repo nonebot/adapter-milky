@@ -199,6 +199,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         user_id: int,
         name: str,
         segments: "Message",
+        time: int | None = None
     ) -> "OutgoingForwardedMessage":
         """合并转发消息节点
 
@@ -206,8 +207,9 @@ class MessageSegment(BaseMessageSegment["Message"]):
             user_id (int): 发送者 QQ 号
             name (str): 发送者名称
             segments (Message): 消息内容
+            time (int, optional): 消息发送时间，Unix 时间戳（秒），若不提供则不包含该字段
         """
-        return OutgoingForwardedMessage(user_id=user_id, sender_name=name, segments=segments)
+        return OutgoingForwardedMessage(user_id=user_id, sender_name=name, segments=segments, time=time)
 
     @staticmethod
     def light_app(json_payload: str) -> "LightAPP":
@@ -372,6 +374,7 @@ class OutgoingForwardedMessage:
     user_id: int
     sender_name: str
     segments: list[MessageSegment]
+    time: int | None = None
 
 
 class OutgoingForwardData(TypedDict):
@@ -397,6 +400,7 @@ class Forward(MessageSegment):
                             user_id=msg["user_id"],
                             sender_name=msg["name"],
                             segments=Message.from_elements(msg["segments"]),
+                            time=msg.get("time")
                         )
                         for msg in data["messages"]
                     ],
@@ -427,6 +431,7 @@ class Forward(MessageSegment):
                         "user_id": message.user_id,
                         "sender_name": message.sender_name,
                         "segments": [seg.dump() for seg in message.segments],
+                        "time": message.time,
                     }
                     for message in self.data["messages"]
                 ]
@@ -465,6 +470,15 @@ class XMLData(TypedDict):
 @dataclass
 class XML(MessageSegment, element_type="xml"):
     data: XMLData = field(default_factory=dict)  # type: ignore
+
+
+class MarkdownData(TypedDict):
+    content: str
+
+
+@dataclass
+class Markdown(MessageSegment, element_type="markdown"):
+    data: MarkdownData = field(default_factory=dict)  # type: ignore
 
 
 TYPE_MAPPING = {cls.__element_type__: cls for cls in MessageSegment.__subclasses__()}  # type: ignore
@@ -519,13 +533,16 @@ class Message(BaseMessage[MessageSegment]):
                         # TODO: 拿 user_id
                         [
                             MessageSegment.node(
-                                int(bot.self_id), msg.sender_name, await msg.message.sendable(bot, refresh_resources)
+                                int(bot.self_id),
+                                msg.sender_name,
+                                await msg.message.sendable(bot, refresh_resources),
+                                msg.time,
                             )
                             for msg in messages
                         ]
                     )
                 )
-            elif isinstance(seg, (File, MarketFace, XML)):
+            elif isinstance(seg, (File, MarketFace, XML, Markdown)):
                 continue
             else:
                 new.append(seg)
