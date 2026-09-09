@@ -496,6 +496,33 @@ class GroupNameChangeData(ModelBase):
     """操作人 QQ号"""
 
 
+class GroupDisbandData(ModelBase):
+    """群解散数据"""
+
+    group_id: int
+    """群号"""
+
+    operator_id: int
+    """操作人 QQ号"""
+
+
+@register_event_class
+class GroupDisbandEvent(NoticeEvent):
+    """群解散事件"""
+
+    __event_type__ = "group_disband"
+
+    data: GroupDisbandData
+
+    @override
+    def get_user_id(self) -> str:
+        return str(self.data.operator_id)
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.data.group_id}_{self.data.operator_id}"
+
+
 @register_event_class
 class GroupNameChangeEvent(NoticeEvent):
     """群名称变更事件"""
