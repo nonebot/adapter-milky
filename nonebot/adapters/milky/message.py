@@ -195,12 +195,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         )
 
     @staticmethod
-    def node(
-        user_id: int,
-        name: str,
-        segments: "Message",
-        time: int | None = None
-    ) -> "OutgoingForwardedMessage":
+    def node(user_id: int, name: str, segments: "Message", time: int | None = None) -> "OutgoingForwardedMessage":
         """合并转发消息节点
 
         Args:
@@ -400,7 +395,7 @@ class Forward(MessageSegment):
                             user_id=msg["user_id"],
                             sender_name=msg["name"],
                             segments=Message.from_elements(msg["segments"]),
-                            time=msg.get("time")
+                            time=msg.get("time"),
                         )
                         for msg in data["messages"]
                     ],
