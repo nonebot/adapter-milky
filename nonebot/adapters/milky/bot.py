@@ -984,13 +984,16 @@ class Bot(BaseBot):
         return result["file_id"]
 
     @api
-    async def get_private_file_download_url(self, *, user_id: int, file_id: str, file_hash: str) -> str:
+    async def get_private_file_download_url(
+        self, *, user_id: int, file_id: str, file_hash: str, is_self_send: bool = False
+    ) -> str:
         """获取私聊文件下载链接
 
         Args:
             user_id (int): 好友 QQ 号
             file_id (str): 文件 ID
             file_hash (str): 文件的 TriSHA1 哈希值
+            is_self_send (bool, optional): 是否是自己发送的文件，默认为 false
         Returns:
             str: 文件下载链接
         """
@@ -1060,6 +1063,16 @@ class Bot(BaseBot):
             file_id (str): 文件 ID
         """
         await self._call("delete_group_file", locals())
+
+    @api
+    async def persist_group_file(self, *, group_id: int, file_id: str) -> None:
+        """转存群文件为永久文件
+
+        Args:
+            group_id (int): 群号
+            file_id (str): 文件 ID
+        """
+        await self._call("persist_group_file", locals())
 
     @api
     async def create_group_folder(self, *, group_id: int, folder_name: str) -> str:
